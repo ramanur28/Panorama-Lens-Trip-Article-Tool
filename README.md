@@ -64,6 +64,34 @@ If you want to bundle the frontend into static files (HTML, CSS, JS) that are hi
 
 ---
 
+## 🐳 How to Run (Docker Compose)
+
+The easiest way to run the application in a production-ready environment on your own server or VPS is using Docker Compose. A `Dockerfile` and `docker-compose.yml` are included in the repository.
+
+1. **Install Docker**
+   Ensure you have Docker and Docker Compose installed on your system.
+
+2. **Build and Start the Container**
+   Open your terminal in the project folder and run:
+   ```bash
+   docker-compose up -d --build
+   ```
+   This command will automatically:
+   - Build the optimized Vite frontend
+   - Install production-only Node dependencies
+   - Start the Express server
+   - Run everything in the background (`-d`)
+
+3. **Access the App**
+   The application will be running at `http://localhost:3001` (or `http://<YOUR-SERVER-IP>:3001`).
+
+4. **Stop the Container**
+   ```bash
+   docker-compose down
+   ```
+
+---
+
 ## 🌐 How to Publish / Deploy
 
 Because this application contains both a Frontend (Vite) and a Backend API (Express), it is best deployed as a single Node.js service. The backend server acts as a proxy to safely communicate with the Gemini API without exposing your network requests.
