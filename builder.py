@@ -1,4 +1,6 @@
-/* ═══════════════════════════════════════════════════════════════
+import os
+
+code = """/* ═══════════════════════════════════════════════════════════════
    ArticleForge AI — Main Application Logic
    ═══════════════════════════════════════════════════════════════ */
 
@@ -1052,7 +1054,7 @@ async function generateArticle(item) {
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n\n");
+      const lines = buffer.split("\\n\\n");
       buffer = lines.pop() || "";
 
       for (const line of lines) {
@@ -1154,7 +1156,7 @@ function renderPreview() {
     dom.statKeyphrase.textContent = `${kCount}x (${((kCount / (wordCount || 1)) * 100).toFixed(1)}%)`;
   }
   if (dom.statSections) {
-    const secCount = (rawArticle.match(/^#{1,3}\s+/gm) || []).length;
+    const secCount = (rawArticle.match(/^#{1,3}\\s+/gm) || []).length;
     dom.statSections.textContent = secCount;
   }
 
@@ -1203,8 +1205,8 @@ function renderPreview() {
       </figure>
     `;
 
-    const pPattern = new RegExp(`<p>\\s*\\[IMAGE[\\s_#]*${num}\\]\\s*<\\/p>`, "gi");
-    const plainPattern = new RegExp(`\\[IMAGE[\\s_#]*${num}\\]`, "gi");
+    const pPattern = new RegExp(`<p>\\\\s*\\\\[IMAGE[\\\\s_#]*${num}\\\\]\\\\s*<\\\\/p>`, "gi");
+    const plainPattern = new RegExp(`\\\\[IMAGE[\\\\s_#]*${num}\\\\]`, "gi");
 
     renderedHtml = renderedHtml.replace(pPattern, figHtml).replace(plainPattern, figHtml);
   });
@@ -1891,7 +1893,7 @@ async function uploadImageToServer(base64Data) {
 // ── Utility Helpers ──────────────────────────────────────────────
 function countWords(text) {
   if (!text) return 0;
-  return text.trim().split(/\s+/).filter((w) => w.length > 0).length;
+  return text.trim().split(/\\s+/).filter((w) => w.length > 0).length;
 }
 
 function countKeyphraseOccurrences(text, keyphrase) {
@@ -1909,7 +1911,7 @@ function escapeHtml(text) {
 }
 
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return string.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
 }
 
 function copyToClipboard() {
@@ -2059,3 +2061,9 @@ if (document.readyState === "loading") {
 } else {
   init();
 }
+"""
+
+with open("src/main.js", "w") as f:
+    f.write(code)
+
+print("Updated builder.py and wrote src/main.js with scheduleMain selector fix!")
