@@ -747,25 +747,28 @@ select option {
   gap: 0.25rem;
 }
 
-.queue-item-status {
+.queue-item-status,
+.queue-item-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   flex-shrink: 0;
 }
 
-.status-pending {
+.status-pending,
+.queue-item-badge.pending {
   background: var(--bg-surface-active);
   color: var(--text-muted);
 }
 
-.status-generating {
+.status-generating,
+.queue-item-badge.generating {
   background: var(--info-bg);
   color: var(--info);
   animation: pulse-status 1.5s ease infinite;
@@ -776,12 +779,15 @@ select option {
   50% { opacity: 0.6; }
 }
 
-.status-complete {
+.status-complete,
+.queue-item-badge.complete {
   background: var(--success-bg);
   color: var(--success);
+  font-size: 0.85rem;
 }
 
-.status-error {
+.status-error,
+.queue-item-badge.error {
   background: var(--error-bg);
   color: var(--error);
 }

@@ -73,8 +73,10 @@
               <label for="wpAppPasswordInput">Application Password</label>
               <input type="password" id="wpAppPasswordInput" placeholder="e.g. xxxx xxxx xxxx xxxx" autocomplete="off" />
             </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; gap: 0.5rem;">
+            <p class="form-hint" style="margin: 0; flex: 1;">Enter WP Application Password (WP Admin → Users → Profile → Application Passwords) to automatically post & schedule directly to WordPress.</p>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnTestWpConn" style="white-space: nowrap;">🔌 Test Connection</button>
           </div>
-          <p class="form-hint" style="margin-top: 0.5rem;">Enter WP Application Password (WP Admin → Users → Profile → Application Passwords) to automatically post & schedule directly to WordPress.</p>
         </fieldset>
       </div>
       <div class="modal-footer">
@@ -107,10 +109,6 @@
       </nav>
     </div>
     <div class="header-right">
-      <div class="api-status" id="apiStatus">
-        <span class="status-dot status-disconnected"></span>
-        <span class="status-text">No API Key</span>
-      </div>
       <button class="btn btn-secondary btn-sm" id="adminLoginHeaderBtn" style="margin-right: 0.5rem;">Admin Login</button>
       <button class="btn btn-ghost" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">
         <svg id="themeIconDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -363,7 +361,7 @@
           <span class="badge" id="queueCount">0</span>
         </h2>
         <div class="panel-actions">
-          <button class="btn btn-sm btn-ghost" id="clearQueueBtn" title="Clear queue">Clear</button>
+          <button class="btn btn-sm btn-ghost admin-only-section" id="clearQueueBtn" title="Clear queue" style="display:none">Clear</button>
           <button class="btn btn-sm btn-accent" id="generateAllBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Generate All
@@ -393,6 +391,12 @@
           </div>
           <button class="btn btn-sm btn-secondary" id="btnEditPreviewContent" title="Edit article text and SEO metadata">
             ✏️ Edit Article & Metadata
+          </button>
+          <button class="btn btn-sm btn-secondary" id="regenerateCurrentBtn" title="Regenerate article using Gemini / OpenAI AI">
+            🔄 Regenerate Article
+          </button>
+          <button class="btn btn-sm btn-ghost text-danger admin-only-section" id="btnRemovePreviewContent" title="Remove article" style="display:none">
+            🗑️ Remove
           </button>
           <button class="btn btn-sm btn-ghost" id="copyBtn" title="Copy to clipboard">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>

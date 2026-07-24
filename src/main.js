@@ -96,6 +96,8 @@ function initDom() {
   dom.articleForm = $("#articleForm");
   dom.modeComposeBtn = $("#modeComposeBtn");
   dom.modeUpdateBtn = $("#modeUpdateBtn");
+  dom.modeImageSeoBtn = $("#modeImageSeoBtn");
+  dom.modeInsertLinkBtn = $("#modeInsertLinkBtn");
   dom.composeFields = $("#composeFields");
   dom.updateFields = $("#updateFields");
   dom.titleInput = $("#titleInput");
@@ -108,6 +110,12 @@ function initDom() {
   dom.customPromptInput = $("#customPromptInput");
   dom.targetAudienceInput = $("#targetAudienceInput");
   dom.brandInput = $("#brandInput");
+  dom.ctaLinkInput = $("#ctaLinkInput");
+  dom.wordCountModeSelect = $("#wordCountModeSelect");
+  dom.wordCountDivisorInput = $("#wordCountDivisorInput");
+  dom.targetWordCountInput = $("#targetWordCountInput");
+  dom.targetLanguageSelect = $("#targetLanguageSelect");
+  dom.saveAdminSettingsBtn = $("#saveAdminSettingsBtn");
   dom.starterInput = $("#starterInput");
   dom.starterWritingsInput = $("#starterWritingsInput");
   dom.quotationsContainer = $("#quotationsContainer");
@@ -118,8 +126,15 @@ function initDom() {
   dom.addInternalLinkBtn = $("#addInternalLinkBtn");
   dom.insertLinkTargetSelect = $("#insertLinkTargetSelect");
   dom.insertLinksListContainer = $("#insertLinksListContainer");
-  dom.addInsertLinkRowBtn = $("#addInsertLinkRowBtn");
+  dom.addInsertLinkRowBtn = $("#addInsertLinkBtn");
   dom.autoInsertLinksBtn = $("#autoInsertLinksBtn");
+  dom.imageFileInput = $("#imageFileInput");
+  dom.imageUploadBtn = $("#imageUploadBtn");
+  dom.imageFileName = $("#imageFileName");
+  dom.imagePreviewContainer = $("#imagePreviewContainer");
+  dom.imagePreview = $("#imagePreview");
+  dom.imageLocationInput = $("#imageLocationInput");
+  dom.imageSceneInput = $("#imageSceneInput");
   dom.addToQueueBtn = $("#addToQueueBtn");
   dom.generateSingleBtn = $("#generateSingleBtn");
 
@@ -151,9 +166,17 @@ function initDom() {
   // Manager View
   dom.articlesTableBody = $("#articlesTableBody");
   dom.emptyManager = $("#emptyManager");
-  dom.managerSearchInput = $("#managerSearchInput");
-  dom.managerFilterTabs = $$(".manager-filter-tab");
-  dom.btnAddArticle = $("#btnAddArticle");
+  dom.txtSearchManager = $("#txtSearchManager");
+  dom.managerFilterTabs = $$("#managerFilters .filter-btn");
+  dom.btnOpenAddModal = $("#btnOpenAddModal");
+
+  // Manager Filter Count Badges
+  dom.badgeAll = $("#badgeAll");
+  dom.badgeAntrean = $("#badgeAntrean");
+  dom.badgeBelum = $("#badgeBelum");
+  dom.badgeTelah = $("#badgeTelah");
+  dom.badgeDijadwalkan = $("#badgeDijadwalkan");
+  dom.badgeDraft = $("#badgeDraft");
 
   // Calendar View
   dom.calendarMonthTitle = $("#calendarMonthTitle");
@@ -162,6 +185,8 @@ function initDom() {
   dom.btnNextMonth = $("#btnNextMonth");
   dom.btnTodayMonth = $("#btnTodayMonth");
   dom.btnSyncWPSchedule = $("#btnSyncWPSchedule");
+  dom.btnSyncWP = $("#btnSyncWP");
+  dom.btnTestWpConn = $("#btnTestWpConn");
   dom.btnOpenScheduleModal = $("#btnOpenScheduleModal");
 
   // Schedule Modal
@@ -178,6 +203,12 @@ function initDom() {
   dom.schLinkInput = $("#schLinkInput");
   dom.schFeaturedImageInput = $("#schFeaturedImageInput");
 
+  // Publishing / Scheduling Progress Overlay Modal
+  dom.publishingProgressModal = $("#publishingProgressModal");
+  dom.publishingProgressTitle = $("#publishingProgressTitle");
+  dom.publishingProgressSubtitle = $("#publishingProgressSubtitle");
+  dom.publishingProgressBar = $("#publishingProgressBar");
+
   // Day Details Modal
   dom.dayDetailsModal = $("#dayDetailsModal");
   dom.dayDetailsModalTitle = $("#dayDetailsModalTitle");
@@ -192,7 +223,19 @@ function initDom() {
   dom.closeEditContentModal = $("#closeEditContentModal");
   dom.btnCancelEditContent = $("#btnCancelEditContent");
   dom.btnSaveEditContent = $("#btnSaveEditContent");
-  dom.editContentTextarea = $("#editContentTextarea");
+  dom.editContentTextarea = $("#editFullContentArea");
+
+  dom.regenerateCurrentBtn = $("#regenerateCurrentBtn");
+  dom.btnRemovePreviewContent = $("#btnRemovePreviewContent");
+
+  dom.metaKeyphraseInput = $("#metaKeyphraseInput");
+  dom.metaTitleInput = $("#metaTitleInput");
+  dom.metaSlugInput = $("#metaSlugInput");
+  dom.metaPageRoleInput = $("#metaPageRoleInput");
+  dom.metaCategoriesInput = $("#metaCategoriesInput");
+  dom.metaTagsInput = $("#metaTagsInput");
+  dom.metaDescriptionInput = $("#metaDescriptionInput");
+  dom.metaExcerptInput = $("#metaExcerptInput");
 
   // Toast
   dom.toastContainer = $("#toastContainer");
@@ -372,12 +415,43 @@ function init() {
   // Form mode handlers
   if (dom.modeComposeBtn) dom.modeComposeBtn.addEventListener("click", () => switchMode("compose"));
   if (dom.modeUpdateBtn) dom.modeUpdateBtn.addEventListener("click", () => switchMode("update"));
+  if (dom.modeImageSeoBtn) dom.modeImageSeoBtn.addEventListener("click", () => switchMode("image-seo"));
+  if (dom.modeInsertLinkBtn) dom.modeInsertLinkBtn.addEventListener("click", () => switchMode("insert-link"));
 
   // Dynamic row buttons
   if (dom.addQuotationBtn) dom.addQuotationBtn.addEventListener("click", () => addQuotation());
   if (dom.addArticleImageBtn) dom.addArticleImageBtn.addEventListener("click", () => addArticleImage());
   if (dom.addInternalLinkBtn) dom.addInternalLinkBtn.addEventListener("click", () => addInternalLink());
   if (dom.addInsertLinkRowBtn) dom.addInsertLinkRowBtn.addEventListener("click", () => addInsertLinkRow());
+  if (dom.autoInsertLinksBtn) dom.autoInsertLinksBtn.addEventListener("click", () => autoInsertLinks());
+
+  // Image SEO upload button
+  if (dom.imageUploadBtn && dom.imageFileInput) {
+    dom.imageUploadBtn.addEventListener("click", () => dom.imageFileInput.click());
+    dom.imageFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (dom.imageFileName) dom.imageFileName.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const base64 = evt.target.result;
+        const compressed = await compressImage(base64);
+        if (dom.imagePreview) {
+          dom.imagePreview.src = compressed;
+          dom.imagePreview.style.display = "block";
+        }
+        if (dom.imagePreviewContainer) dom.imagePreviewContainer.style.display = "block";
+        const serverUrl = await uploadImageToServer(compressed);
+        if (serverUrl && dom.imagePreview) {
+          dom.imagePreview.dataset.url = serverUrl;
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Admin Settings save button
+  if (dom.saveAdminSettingsBtn) dom.saveAdminSettingsBtn.addEventListener("click", saveAdminSettingsFromForm);
 
   // Form Actions
   if (dom.addToQueueBtn) dom.addToQueueBtn.addEventListener("click", addToQueue);
@@ -402,8 +476,8 @@ function init() {
   });
 
   // Article Manager Search & Filter
-  if (dom.managerSearchInput) {
-    dom.managerSearchInput.addEventListener("input", (e) => {
+  if (dom.txtSearchManager) {
+    dom.txtSearchManager.addEventListener("input", (e) => {
       state.managerSearch = e.target.value;
       renderArticles();
     });
@@ -413,12 +487,12 @@ function init() {
       tab.addEventListener("click", () => {
         dom.managerFilterTabs.forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
-        state.managerFilter = tab.dataset.filter || "all";
+        state.managerFilter = tab.dataset.status || tab.dataset.filter || "all";
         renderArticles();
       });
     });
   }
-  if (dom.btnAddArticle) dom.btnAddArticle.addEventListener("click", openAddArticleModal);
+  if (dom.btnOpenAddModal) dom.btnOpenAddModal.addEventListener("click", openAddArticleModal);
 
   // Calendar Controls
   if (dom.btnPrevMonth) dom.btnPrevMonth.addEventListener("click", () => {
@@ -433,12 +507,9 @@ function init() {
     state.currentCalendarDate = new Date();
     renderCalendar();
   });
-  if (dom.btnSyncWPSchedule) dom.btnSyncWPSchedule.addEventListener("click", async () => {
-    showToast("Syncing articles...", "info");
-    await loadArticles();
-    renderCalendar();
-    showToast("Calendar synced!", "success");
-  });
+  if (dom.btnSyncWPSchedule) dom.btnSyncWPSchedule.addEventListener("click", () => syncWordPressData());
+  if (dom.btnSyncWP) dom.btnSyncWP.addEventListener("click", () => syncWordPressData());
+  if (dom.btnTestWpConn) dom.btnTestWpConn.addEventListener("click", () => testWpConnection());
   if (dom.btnOpenScheduleModal) dom.btnOpenScheduleModal.addEventListener("click", () => openScheduleModal());
 
   // Modal Close Handlers
@@ -452,6 +523,10 @@ function init() {
   if (dom.closeEditContentModal) dom.closeEditContentModal.addEventListener("click", closeEditContentModal);
   if (dom.btnCancelEditContent) dom.btnCancelEditContent.addEventListener("click", closeEditContentModal);
   if (dom.btnSaveEditContent) dom.btnSaveEditContent.addEventListener("click", saveEditContentModal);
+  if (dom.regenerateCurrentBtn) dom.regenerateCurrentBtn.addEventListener("click", () => regenerateQueueItem(state.activeItemId));
+  if (dom.btnRemovePreviewContent) dom.btnRemovePreviewContent.addEventListener("click", () => {
+    if (state.activeItemId) removeFromQueue(state.activeItemId);
+  });
 
   // Initial Form Setup
   addArticleImage();
@@ -462,20 +537,30 @@ function init() {
     setTimeout(() => openModal(), 500);
   }
 }
-
 // ── Form Mode Switcher ───────────────────────────────────────────
 function switchMode(mode) {
   state.currentMode = mode;
-  if (mode === "compose") {
-    if (dom.modeComposeBtn) dom.modeComposeBtn.classList.add("active");
-    if (dom.modeUpdateBtn) dom.modeUpdateBtn.classList.remove("active");
-    if (dom.composeFields) dom.composeFields.style.display = "block";
-    if (dom.updateFields) dom.updateFields.style.display = "none";
-  } else {
-    if (dom.modeUpdateBtn) dom.modeUpdateBtn.classList.add("active");
-    if (dom.modeComposeBtn) dom.modeComposeBtn.classList.remove("active");
-    if (dom.composeFields) dom.composeFields.style.display = "none";
-    if (dom.updateFields) dom.updateFields.style.display = "block";
+  const form = dom.articleForm || $("#articleForm");
+  if (form) {
+    form.className = `mode-${mode}`;
+  }
+
+  const btnMap = {
+    "compose": dom.modeComposeBtn,
+    "update": dom.modeUpdateBtn,
+    "image-seo": dom.modeImageSeoBtn,
+    "insert-link": dom.modeInsertLinkBtn
+  };
+
+  Object.keys(btnMap).forEach(m => {
+    if (btnMap[m]) {
+      if (m === mode) btnMap[m].classList.add("active");
+      else btnMap[m].classList.remove("active");
+    }
+  });
+
+  if (mode === "insert-link") {
+    populateInsertLinkTargetSelect();
   }
 }
 
@@ -513,7 +598,7 @@ function getFormData() {
     }))
     .filter(link => link.title && link.url);
 
-  const insertLinkTargetId = dom.insertLinkTargetSelect && dom.insertLinkTargetSelect.value ? parseInt(dom.insertLinkTargetSelect.value, 10) : null;
+  const insertLinkTargetId = dom.insertLinkTargetSelect && dom.insertLinkTargetSelect.value ? dom.insertLinkTargetSelect.value : null;
   const insertLinks = Array.from(dom.insertLinksListContainer ? dom.insertLinksListContainer.querySelectorAll(".insert-link-item") : [])
     .map(item => ({
       title: item.querySelector(".insert-link-title-input") ? item.querySelector(".insert-link-title-input").value.trim() : "",
@@ -530,8 +615,6 @@ function getFormData() {
     articleImages: articleImages.length > 0 ? articleImages : undefined,
     images: articleImages.length > 0 ? articleImages : undefined,
     internalLinks: internalLinks.length > 0 ? internalLinks : undefined,
-    insertLinkTargetId: insertLinkTargetId || undefined,
-    insertLinks: insertLinks.length > 0 ? insertLinks : undefined,
   };
 
   if (state.currentMode === "compose") {
@@ -545,7 +628,7 @@ function getFormData() {
       styleInstructions: dom.styleInput ? dom.styleInput.value.trim() : "",
       starterArticle: dom.starterInput ? dom.starterInput.value.trim() : "",
     };
-  } else {
+  } else if (state.currentMode === "update") {
     return {
       ...common,
       mode: "update",
@@ -554,23 +637,49 @@ function getFormData() {
       targetSubtitle: dom.targetSubtitleInput ? dom.targetSubtitleInput.value.trim() : "",
       starterWritings: dom.starterWritingsInput ? dom.starterWritingsInput.value.trim() : "",
     };
+  } else if (state.currentMode === "image-seo") {
+    const imgEl = dom.imagePreview;
+    const isUploaded = imgEl && imgEl.style.display !== "none";
+    const url = isUploaded ? (imgEl.dataset.url || "") : "";
+    const base64 = isUploaded ? (imgEl.src || "") : "";
+    const fileName = dom.imageFileName ? dom.imageFileName.textContent : "";
+    return {
+      ...common,
+      mode: "image-seo",
+      title: `Image SEO: ${fileName && fileName !== "No file chosen" ? fileName : "Uploaded Image"}`,
+      imageUrl: url,
+      imageBase64: base64,
+      location: dom.imageLocationInput ? dom.imageLocationInput.value.trim() : "",
+      scene: dom.imageSceneInput ? dom.imageSceneInput.value.trim() : "",
+    };
+  } else if (state.currentMode === "insert-link") {
+    const targetItem = insertLinkTargetId ? (state.queue.find(q => String(q.id) === String(insertLinkTargetId)) || (state.articles ? state.articles.find(a => String(a.id) === String(insertLinkTargetId)) : null)) : null;
+    return {
+      ...common,
+      mode: "insert-link",
+      title: targetItem ? `Insert Links into: ${targetItem.title || targetItem.keyphrase}` : "Insert Internal Links",
+      insertLinkTargetId: insertLinkTargetId || undefined,
+      articleText: targetItem ? (targetItem.article || "") : "",
+      links: insertLinks,
+    };
   }
 }
 
 function validateForm() {
-  const data = getFormData();
-  if (!state.apiKey) {
-    showToast("Please set your Gemini API key in Settings first.", "error");
+  if (!state.apiKey && !state.openaiApiKey) {
+    showToast("Please set your Gemini or OpenAI API key in Settings first.", "error");
     openModal();
     return null;
   }
-  if (!data.title) {
-    showToast("Please enter an article title.", "error");
-    if (dom.titleInput) dom.titleInput.focus();
-    return null;
-  }
-  
+  const data = getFormData();
+  if (!data) return null;
+
   if (data.mode === "compose") {
+    if (!data.title) {
+      showToast("Please enter an article title.", "error");
+      if (dom.titleInput) dom.titleInput.focus();
+      return null;
+    }
     if (!data.topic) {
       showToast("Please enter a topic or core question.", "error");
       if (dom.topicInput) dom.topicInput.focus();
@@ -581,7 +690,12 @@ function validateForm() {
       if (dom.keyphraseInput) dom.keyphraseInput.focus();
       return null;
     }
-  } else {
+  } else if (data.mode === "update") {
+    if (!data.title) {
+      showToast("Please enter an article title.", "error");
+      if (dom.titleInput) dom.titleInput.focus();
+      return null;
+    }
     if (!data.wpUrl) {
       showToast("Please enter the WordPress Post URL.", "error");
       if (dom.wpUrlInput) dom.wpUrlInput.focus();
@@ -592,7 +706,28 @@ function validateForm() {
       if (dom.targetSubtitleInput) dom.targetSubtitleInput.focus();
       return null;
     }
+  } else if (data.mode === "image-seo") {
+    if (!data.imageBase64 && !data.imageUrl) {
+      showToast("Please choose an image file first.", "error");
+      if (dom.imageUploadBtn) dom.imageUploadBtn.click();
+      return null;
+    }
+  } else if (data.mode === "insert-link") {
+    if (!data.insertLinkTargetId) {
+      showToast("Please select a target completed article.", "error");
+      if (dom.insertLinkTargetSelect) dom.insertLinkTargetSelect.focus();
+      return null;
+    }
+    if (!data.articleText) {
+      showToast("Target article has no content to insert links into.", "error");
+      return null;
+    }
+    if (!data.links || data.links.length === 0) {
+      showToast("Please add at least one internal link to insert.", "error");
+      return null;
+    }
   }
+
   return data;
 }
 
@@ -605,6 +740,15 @@ function clearForm() {
   if (dom.styleInput) dom.styleInput.value = "";
   if (dom.starterInput) dom.starterInput.value = "";
   if (dom.starterWritingsInput) dom.starterWritingsInput.value = "";
+  if (dom.imageFileName) dom.imageFileName.textContent = "No file chosen";
+  if (dom.imagePreview) {
+    dom.imagePreview.src = "";
+    delete dom.imagePreview.dataset.url;
+  }
+  if (dom.imagePreviewContainer) dom.imagePreviewContainer.style.display = "none";
+  if (dom.imageLocationInput) dom.imageLocationInput.value = "";
+  if (dom.imageSceneInput) dom.imageSceneInput.value = "";
+  if (dom.insertLinksListContainer) dom.insertLinksListContainer.innerHTML = "";
   if (dom.quotationsContainer) dom.quotationsContainer.innerHTML = "";
   if (dom.internalLinksContainer) dom.internalLinksContainer.innerHTML = "";
   if (dom.articleImagesContainer) {
@@ -616,8 +760,17 @@ function clearForm() {
 
 // ── Queue Management ─────────────────────────────────────────────
 function createQueueItem(data) {
+  const matchManager = state.articles ? state.articles.find(a => {
+    const aTitle = (a.title || "").toLowerCase().trim();
+    const aKp = (a.keyphrase || "").toLowerCase().trim();
+    const dTitle = (data.title || "").toLowerCase().trim();
+    const dKp = (data.keyphrase || "").toLowerCase().trim();
+    return (dTitle && (aTitle === dTitle || aKp === dTitle)) || (dKp && (aKp === dKp || aTitle === dKp));
+  }) : null;
+
   return {
     id: nextId++,
+    managerId: data.managerId || (matchManager ? matchManager.id : null),
     ...data,
     status: "pending",
     progress: 0,
@@ -630,8 +783,9 @@ function createQueueItem(data) {
 
 function addToQueue() {
   const data = validateForm();
-  if (!data) return;
+  if (!data) return null;
 
+  let item = null;
   if (state.editingQueueId) {
     const idx = state.queue.findIndex(q => q.id === state.editingQueueId);
     if (idx !== -1) {
@@ -639,15 +793,16 @@ function addToQueue() {
         ...state.queue[idx],
         ...data,
       };
+      item = state.queue[idx];
       showToast(`"${data.title}" updated in queue.`, "success");
     } else {
-      const item = createQueueItem(data);
+      item = createQueueItem(data);
       state.queue.push(item);
       showToast(`"${item.title}" added to queue.`, "success");
     }
     state.editingQueueId = null;
   } else {
-    const item = createQueueItem(data);
+    item = createQueueItem(data);
     state.queue.push(item);
     showToast(`"${item.title}" added to queue.`, "success");
   }
@@ -658,6 +813,7 @@ function addToQueue() {
   clearForm();
   saveQueue();
   renderQueue();
+  return item;
 }
 
 function removeFromQueue(id) {
@@ -677,7 +833,10 @@ function removeFromQueue(id) {
   }
   renderQueue();
   renderPreview();
+  showToast("Item removed from queue.", "info");
 }
+
+window.__removeFromQueue = (id) => removeFromQueue(id);
 
 function clearQueue() {
   if (state.isGenerating) {
@@ -740,11 +899,18 @@ function populateInsertLinkTargetSelect() {
   const currentVal = selectEl.value;
   selectEl.innerHTML = '<option value="">-- Choose Completed Article to Edit --</option>';
 
-  const completedItems = state.queue.filter(item => item.status === "complete");
-  completedItems.forEach(item => {
+  const allArticles = [
+    ...state.queue.filter(item => item.status === "complete" || item.article),
+    ...(state.articles ? state.articles.filter(a => a.article || a.link) : [])
+  ];
+
+  const seenIds = new Set();
+  allArticles.forEach(item => {
+    if (!item.id || seenIds.has(item.id)) return;
+    seenIds.add(item.id);
     const option = document.createElement("option");
     option.value = item.id;
-    option.textContent = item.title;
+    option.textContent = item.title || item.keyphrase || `Article #${item.id}`;
     selectEl.appendChild(option);
   });
 
@@ -790,24 +956,16 @@ function renderQueue() {
     const hasImages = imagesList.length > 0;
     const featBadge = hasImages ? `<span class="badge badge-secondary" style="font-size:0.65rem; margin-left:4px;">🖼️ ${imagesList.length} Imgs</span>` : "";
 
-    // Action buttons for queue list items:
-    const genBtn = item.status !== "generating" 
-      ? (isDone 
-          ? `<button class="btn btn-xs btn-secondary" onclick="event.stopPropagation(); window.__regenerate(${item.id})" title="Regenerate article">🔄 Regenerate</button>`
-          : `<button class="btn btn-xs btn-primary" onclick="event.stopPropagation(); window.__generateOne(${item.id})" title="Generate article now">▶ Generate</button>`)
-      : "";
-
-    const editBtn = isDone ? `<button class="btn btn-xs btn-ghost" onclick="event.stopPropagation(); window.__editQueueItem(${item.id})" title="Edit article text">✏️ Edit</button>` : "";
+    // Action buttons for queue list items: Regenerate, Publish, Schedule, Remove (Admin only)
+    const regenBtn = item.status !== "generating" ? `<button class="btn btn-xs btn-secondary" onclick="event.stopPropagation(); window.__regenerateQueueItem(${item.id})" title="Regenerate this article">🔄 Regenerate</button>` : "";
     const pubBtn = isDone ? `<button class="btn btn-xs btn-success" onclick="event.stopPropagation(); window.__publishQueueItem(${item.id})" title="Publish directly to WordPress">🚀 Publish</button>` : "";
     const schBtn = isDone ? `<button class="btn btn-xs btn-warning" onclick="event.stopPropagation(); window.__scheduleQueueItem(${item.id})" title="Schedule WordPress publication">📅 Schedule</button>` : "";
-    
-    // Delete button ONLY for Admin users
-    const delBtn = state.isAdmin ? `<button class="btn btn-xs btn-ghost text-danger" onclick="event.stopPropagation(); window.__removeItem(${item.id})" title="Delete item (Admin Only)">🗑️ Delete</button>` : "";
+    const removeQueueBtn = (state.isAdmin && item.status !== "generating") ? `<button class="btn btn-xs btn-ghost text-danger" onclick="event.stopPropagation(); window.__removeFromQueue(${item.id})" title="Remove item from queue">🗑️ Remove</button>` : "";
 
     el.innerHTML = `
       <div class="queue-item-header">
         <span class="queue-item-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}${featBadge}</span>
-        <span class="queue-item-badge ${item.status}">${item.status}</span>
+        <span class="queue-item-status status-${item.status}">${item.status === "complete" ? "✅" : item.status}</span>
       </div>
       <div class="queue-item-meta">
         <span>${item.mode === "compose" ? "📝 Compose" : "🔄 Update"}</span>
@@ -826,11 +984,10 @@ function renderQueue() {
       ` : ""}
       ${isErr ? `<div class="queue-item-error">❌ ${escapeHtml(item.error)}</div>` : ""}
       <div class="queue-item-actions">
-        ${genBtn}
-        ${editBtn}
+        ${regenBtn}
         ${pubBtn}
         ${schBtn}
-        ${delBtn}
+        ${removeQueueBtn}
       </div>
     `;
 
@@ -963,13 +1120,119 @@ function addInsertLinkRow(title = "", url = "", count = 1) {
   dom.insertLinksListContainer.appendChild(div);
 }
 
-// ── Generation Logic ─────────────────────────────────────────────
-async function generateSingle() {
-  const item = state.queue.find((q) => q.status === "pending" || q.status === "error");
-  if (!item) {
-    showToast("No pending items in queue.", "info");
+function autoInsertLinks() {
+  if (!dom.insertLinksListContainer) return;
+  const targetId = dom.insertLinkTargetSelect ? dom.insertLinkTargetSelect.value : "";
+  const availableArticles = [
+    ...state.queue.filter(i => (i.status === "complete" || i.article) && String(i.id) !== String(targetId)),
+    ...(state.articles ? state.articles.filter(a => String(a.id) !== String(targetId)) : [])
+  ];
+
+  if (availableArticles.length === 0) {
+    showToast("No related articles found to auto-fill.", "info");
     return;
   }
+
+  dom.insertLinksListContainer.innerHTML = "";
+  const addedUrls = new Set();
+  availableArticles.slice(0, 4).forEach(art => {
+    const title = art.title || art.keyphrase || "Related Guide";
+    const url = art.link || (art.slug ? `https://panoramalenstrip.com/${art.slug}/` : `https://panoramalenstrip.com/article-${art.id}/`);
+    if (addedUrls.has(url)) return;
+    addedUrls.add(url);
+    addInsertLinkRow(title, url, 1);
+  });
+
+  showToast(`Auto-filled ${addedUrls.size} related link(s).`, "success");
+}
+
+async function saveAdminSettingsFromForm() {
+  const settings = {
+    customPrompt: dom.customPromptInput ? dom.customPromptInput.value.trim() : "",
+    targetAudience: dom.targetAudienceInput ? dom.targetAudienceInput.value.trim() : "",
+    brand: dom.brandInput ? dom.brandInput.value.trim() : "",
+    ctaLink: dom.ctaLinkInput ? dom.ctaLinkInput.value.trim() : "",
+    targetLanguage: dom.targetLanguageSelect ? dom.targetLanguageSelect.value : "English",
+    tone: dom.toneSelect ? dom.toneSelect.value : "Professional",
+    wordCountMode: dom.wordCountModeSelect ? dom.wordCountModeSelect.value : "total",
+    wordCountDivisor: dom.wordCountDivisorInput ? parseInt(dom.wordCountDivisorInput.value, 10) || 10 : 10,
+    targetWordCount: dom.targetWordCountInput ? parseInt(dom.targetWordCountInput.value, 10) || 3000 : 3000,
+  };
+
+  try {
+    const res = await fetch(apiPath("/api/admin/settings"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings)
+    });
+    if (res.ok) {
+      showToast("Admin settings saved globally!", "success");
+      if (settings.targetAudience) localStorage.setItem("af-audience", settings.targetAudience);
+      if (settings.brand) localStorage.setItem("af-brand", settings.brand);
+    } else {
+      showToast("Failed to save admin settings.", "error");
+    }
+  } catch (err) {
+    console.error("Error saving admin settings:", err);
+    showToast("Error saving admin settings.", "error");
+  }
+}
+
+// ── Generation Logic ─────────────────────────────────────────────
+async function regenerateQueueItem(id) {
+  const item = state.queue.find((q) => q.id === id);
+  if (!item) {
+    showToast("Selected article not found in queue.", "error");
+    return;
+  }
+
+  if (item.status === "generating") {
+    showToast("Article is currently generating.", "warning");
+    return;
+  }
+
+  if (!state.apiKey && !state.openaiApiKey) {
+    showToast("Please set your Gemini or OpenAI API key in Settings first.", "error");
+    openModal();
+    return;
+  }
+
+  item.status = "pending";
+  item.progress = 0;
+  item.progressMessage = "Queued for regeneration...";
+  item.error = "";
+  item.article = "";
+  item.wordCount = 0;
+
+  saveQueue();
+  renderQueue();
+  if (state.activeItemId === item.id) {
+    renderPreview();
+  }
+  showToast(`Regenerating "${item.title}"...`, "info");
+
+  await generateArticle(item);
+}
+
+window.__regenerateQueueItem = (id) => regenerateQueueItem(id);
+
+async function generateSingle() {
+  let item = state.queue.find((q) => q.status === "pending" || q.status === "error");
+  if (!item) {
+    const data = validateForm();
+    if (data) {
+      item = createQueueItem(data);
+      state.queue.push(item);
+      saveQueue();
+      renderQueue();
+    }
+  }
+
+  if (!item) {
+    showToast("Please fill in required fields or add an item to the queue.", "error");
+    return;
+  }
+
   await generateArticle(item);
 }
 
@@ -1003,33 +1266,61 @@ async function generateArticle(item) {
   setGeneratingUI(true);
 
   try {
-    const endpoint = item.mode === "update" ? apiPath("/api/update-section") : apiPath("/api/generate");
-
-    const bodyData = {
+    let endpoint = apiPath("/api/generate");
+    let bodyData = {
       apiKey: state.apiKey,
       openaiApiKey: state.openaiApiKey,
       model: state.model,
       customPrompt: item.customPrompt || undefined,
       targetAudience: item.targetAudience || undefined,
       brand: item.brand || undefined,
-      expertQuotations: item.expertQuotations || undefined,
-      articleImages: item.articleImages || item.images || undefined,
-      images: item.articleImages || item.images || undefined,
-      featuredImage: (item.articleImages && item.articleImages.length > 0) ? item.articleImages[0] : (item.images && item.images.length > 0 ? item.images[0] : undefined),
-      internalLinks: item.internalLinks || undefined,
-      title: item.title,
     };
 
     if (item.mode === "compose") {
-      bodyData.topic = item.topic;
-      bodyData.keyphrase = item.keyphrase;
-      bodyData.tone = item.tone;
-      bodyData.styleInstructions = item.styleInstructions;
-      bodyData.starterArticle = item.starterArticle;
-    } else {
-      bodyData.wpUrl = item.wpUrl;
-      bodyData.targetSubtitle = item.targetSubtitle;
-      bodyData.starterWritings = item.starterWritings;
+      endpoint = apiPath("/api/generate");
+      bodyData = {
+        ...bodyData,
+        title: item.title,
+        topic: item.topic,
+        keyphrase: item.keyphrase,
+        tone: item.tone,
+        styleInstructions: item.styleInstructions,
+        starterArticle: item.starterArticle,
+        expertQuotations: item.expertQuotations,
+        articleImages: item.articleImages || item.images,
+        images: item.articleImages || item.images,
+        featuredImage: (item.articleImages && item.articleImages.length > 0) ? item.articleImages[0] : (item.images && item.images.length > 0 ? item.images[0] : undefined),
+        internalLinks: item.internalLinks,
+      };
+    } else if (item.mode === "update") {
+      endpoint = apiPath("/api/update-section");
+      bodyData = {
+        ...bodyData,
+        title: item.title,
+        wpUrl: item.wpUrl,
+        targetSubtitle: item.targetSubtitle,
+        starterWritings: item.starterWritings,
+        expertQuotations: item.expertQuotations,
+        articleImages: item.articleImages || item.images,
+        images: item.articleImages || item.images,
+        internalLinks: item.internalLinks,
+      };
+    } else if (item.mode === "image-seo") {
+      endpoint = apiPath("/api/generate-image-meta");
+      bodyData = {
+        ...bodyData,
+        imageBase64: item.imageBase64,
+        imageUrl: item.imageUrl,
+        location: item.location,
+        scene: item.scene,
+      };
+    } else if (item.mode === "insert-link") {
+      endpoint = apiPath("/api/insert-link");
+      bodyData = {
+        ...bodyData,
+        articleText: item.articleText,
+        links: item.links,
+      };
     }
 
     const response = await fetch(endpoint, {
@@ -1110,7 +1401,7 @@ function handleSSEEvent(item, data) {
       break;
     case "error":
       item.status = "error";
-      item.error = data.error || "Generation error";
+      item.error = data.message || data.error || "Generation error";
       showToast(`Error: ${item.error}`, "error");
       break;
   }
@@ -1298,15 +1589,60 @@ async function loadArticles() {
 }
 
 function isItemInQueue(item, queue) {
-  if (!queue || queue.length === 0) return null;
-  return queue.find(q => 
-    (item.id && q.id === item.id) ||
-    (item.keyphrase && q.keyphrase && q.keyphrase.toLowerCase().trim() === item.keyphrase.toLowerCase().trim()) ||
-    (item.title && q.title && q.title.toLowerCase().trim() === item.title.toLowerCase().trim())
-  );
+  if (!queue || queue.length === 0 || !item) return null;
+  const mId = item.id !== undefined && item.id !== null ? String(item.id) : null;
+  const itemTitle = (item.title || "").toLowerCase().trim();
+  const itemKp = (item.keyphrase || "").toLowerCase().trim();
+
+  return queue.find(q => {
+    if (mId && q.managerId !== undefined && q.managerId !== null && String(q.managerId) === mId) return true;
+    const qTitle = (q.title || "").toLowerCase().trim();
+    const qKp = (q.keyphrase || "").toLowerCase().trim();
+    if (itemTitle && (qTitle === itemTitle || qKp === itemTitle)) return true;
+    if (itemKp && (qKp === itemKp || qTitle === itemKp)) return true;
+    return false;
+  });
+}
+
+function updateManagerBadges() {
+  if (!state.articles || !Array.isArray(state.articles)) return;
+
+  const totalCount = state.articles.length;
+  let antreanCount = 0;
+  let belumCount = 0;
+  let telahCount = 0;
+  let dijadwalkanCount = 0;
+  let draftCount = 0;
+
+  state.articles.forEach(item => {
+    const inQueue = isItemInQueue(item, state.queue);
+    if (inQueue) antreanCount++;
+
+    const status = item.status || "belum_dibuat";
+    if (status === "telah_dibuat") telahCount++;
+    else if (status === "dijadwalkan") dijadwalkanCount++;
+    else if (status === "draft") draftCount++;
+    else belumCount++;
+  });
+
+  if (!dom.badgeAll) dom.badgeAll = $("#badgeAll");
+  if (!dom.badgeAntrean) dom.badgeAntrean = $("#badgeAntrean");
+  if (!dom.badgeBelum) dom.badgeBelum = $("#badgeBelum");
+  if (!dom.badgeTelah) dom.badgeTelah = $("#badgeTelah");
+  if (!dom.badgeDijadwalkan) dom.badgeDijadwalkan = $("#badgeDijadwalkan");
+  if (!dom.badgeDraft) dom.badgeDraft = $("#badgeDraft");
+
+  if (dom.badgeAll) dom.badgeAll.textContent = totalCount;
+  if (dom.badgeAntrean) dom.badgeAntrean.textContent = antreanCount;
+  if (dom.badgeBelum) dom.badgeBelum.textContent = belumCount;
+  if (dom.badgeTelah) dom.badgeTelah.textContent = telahCount;
+  if (dom.badgeDijadwalkan) dom.badgeDijadwalkan.textContent = dijadwalkanCount;
+  if (dom.badgeDraft) dom.badgeDraft.textContent = draftCount;
 }
 
 function renderArticles() {
+  updateManagerBadges();
+
   const container = dom.articlesTableBody;
   if (!container) return;
 
@@ -1416,7 +1752,16 @@ function composeArticleFromItem(item) {
   switchView("writer");
   switchMode("compose");
 
-  const existingQueue = state.queue.find(q => q.id === item.id || (item.keyphrase && q.keyphrase && q.keyphrase.toLowerCase() === item.keyphrase.toLowerCase()) || (item.title && q.title && q.title.toLowerCase() === item.title.toLowerCase()));
+  const itemTitle = (item.title || "").toLowerCase().trim();
+  const itemKp = (item.keyphrase || "").toLowerCase().trim();
+
+  const existingQueue = state.queue.find(q => 
+    (q.managerId && String(q.managerId) === String(item.id)) ||
+    (itemTitle && q.title && q.title.toLowerCase().trim() === itemTitle) ||
+    (itemKp && q.keyphrase && q.keyphrase.toLowerCase().trim() === itemKp) ||
+    (itemTitle && q.keyphrase && q.keyphrase.toLowerCase().trim() === itemTitle) ||
+    (itemKp && q.title && q.title.toLowerCase().trim() === itemKp)
+  );
 
   if (existingQueue) {
     state.editingQueueId = existingQueue.id;
@@ -1517,15 +1862,45 @@ function renderCalendar() {
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
+  const todayStr = new Date().toISOString().split("T")[0];
+
   // Gather all scheduled / published events
   const eventsByDate = {};
+  const processedKeys = new Set();
 
   const allItems = [...state.queue, ...state.articles];
   allItems.forEach(item => {
-    if (item.publishedDate || item.scheduledDate || item.date) {
-      const dStr = (item.publishedDate || item.scheduledDate || item.date).split("T")[0].split(" ")[0];
-      if (!eventsByDate[dStr]) eventsByDate[dStr] = [];
-      eventsByDate[dStr].push(item);
+    // Only include items that are explicitly published or valid future scheduled
+    const isPub = item.status === "telah_dibuat" || item.status === "published" || (!!item.publishedDate && item.status !== "pending" && item.status !== "generating" && item.status !== "complete");
+
+    let isSch = false;
+    if (!isPub && (item.status === "dijadwalkan" || item.status === "scheduled")) {
+      const schDate = item.scheduledDate ? item.scheduledDate.split("T")[0].split(" ")[0] : null;
+      if (schDate && schDate >= todayStr) {
+        isSch = true;
+      }
+    }
+
+    if (isPub || isSch) {
+      const rawDate = isPub
+        ? (item.publishedDate || item.scheduledDate || item.date)
+        : (item.scheduledDate || item.publishedDate || item.date);
+
+      if (rawDate && typeof rawDate === "string") {
+        const dStr = rawDate.split("T")[0].split(" ")[0];
+        const titleKey = (item.title || item.keyphrase || "").toLowerCase().trim();
+        const uniqueKey = `${dStr}_${titleKey}`;
+
+        if (titleKey && !processedKeys.has(uniqueKey)) {
+          processedKeys.add(uniqueKey);
+          if (!eventsByDate[dStr]) eventsByDate[dStr] = [];
+          eventsByDate[dStr].push({
+            ...item,
+            _isPub: isPub,
+            _isSch: isSch
+          });
+        }
+      }
     }
   });
 
@@ -1553,8 +1928,8 @@ function renderCalendar() {
 
     let badgesHtml = "";
     if (dayEvents.length > 0) {
-      const pubCount = dayEvents.filter(e => e.status === "complete" || e.status === "telah_dibuat" || e.publishedDate).length;
-      const schCount = dayEvents.filter(e => e.status === "dijadwalkan" || e.scheduledDate).length;
+      const pubCount = dayEvents.filter(e => e._isPub).length;
+      const schCount = dayEvents.filter(e => e._isSch && !e._isPub).length;
 
       if (pubCount > 0) {
         badgesHtml += `<div class="activity-badge activity-badge-published">🟢 ${pubCount} Published</div>`;
@@ -1599,7 +1974,7 @@ function openDayDetailsModal(dateStr, dayEvents = []) {
     } else {
       let html = `<div class="day-activities-list">`;
       dayEvents.forEach(item => {
-        const isPub = item.status === "complete" || item.status === "telah_dibuat" || item.publishedDate;
+        const isPub = item._isPub !== undefined ? item._isPub : !!(item.publishedDate || item.status === "telah_dibuat" || item.status === "published");
         const statusBadge = isPub 
           ? `<span class="badge badge-success">Published</span>` 
           : `<span class="badge badge-warning">Scheduled</span>`;
@@ -1641,6 +2016,33 @@ function closeDayDetailsModal() {
 }
 
 // ── Schedule Modal ───────────────────────────────────────────────
+function showPublishingProgressModal(action = "publish", titleText = "") {
+  if (!dom.publishingProgressModal) dom.publishingProgressModal = $("#publishingProgressModal");
+  if (!dom.publishingProgressTitle) dom.publishingProgressTitle = $("#publishingProgressTitle");
+  if (!dom.publishingProgressSubtitle) dom.publishingProgressSubtitle = $("#publishingProgressSubtitle");
+  
+  if (dom.publishingProgressTitle) {
+    dom.publishingProgressTitle.textContent = action === "publish"
+      ? `🚀 Publishing "${titleText || 'Article'}" to WordPress...`
+      : `📅 Scheduling "${titleText || 'Article'}" for upload...`;
+  }
+  if (dom.publishingProgressSubtitle) {
+    dom.publishingProgressSubtitle.textContent = action === "publish"
+      ? "Uploading image media with SEO metadata & syncing article body with WordPress..."
+      : "Setting schedule date & syncing status with WordPress...";
+  }
+  if (dom.publishingProgressModal) {
+    dom.publishingProgressModal.classList.add("active");
+  }
+}
+
+function hidePublishingProgressModal() {
+  if (!dom.publishingProgressModal) dom.publishingProgressModal = $("#publishingProgressModal");
+  if (dom.publishingProgressModal) {
+    dom.publishingProgressModal.classList.remove("active");
+  }
+}
+
 function openScheduleModal({ articleId, queueId, date, title, keyphrase, action = "publish" } = {}) {
   if (!dom.scheduleModal) return;
 
@@ -1650,19 +2052,44 @@ function openScheduleModal({ articleId, queueId, date, title, keyphrase, action 
   if (dom.schTimeInput) dom.schTimeInput.value = "09:00";
   if (dom.schActionSelect) dom.schActionSelect.value = action;
 
-  // Populate Article Select
+  // Populate Article Select with distinct prefixed IDs
   if (dom.schArticleSelect) {
     dom.schArticleSelect.innerHTML = '<option value="">-- Select Article to Publish/Schedule --</option>';
-    const allItems = [...state.queue, ...state.articles];
-    allItems.forEach(i => {
+    
+    // Add Queue items first
+    state.queue.forEach(i => {
       const opt = document.createElement("option");
-      opt.value = i.id;
-      opt.textContent = `${i.title || i.keyphrase} (${i.status || "draft"})`;
-      if ((articleId && i.id === articleId) || (queueId && i.id === queueId) || (title && i.title === title)) {
+      opt.value = `queue_${i.id}`;
+      let statusLabel = "Unscheduled Queue Item";
+      if (i.status === "dijadwalkan" || i.scheduledDate) {
+        statusLabel = `📅 Scheduled (${i.scheduledDate || "WP"})`;
+      } else if (i.status === "telah_dibuat" || i.publishedDate) {
+        statusLabel = `🟢 Published (${i.publishedDate || "WP"})`;
+      } else if (i.status === "generating") {
+        statusLabel = "⚙️ Generating";
+      } else if (i.status === "complete") {
+        statusLabel = "Draft in Queue (Not Scheduled)";
+      }
+      opt.textContent = `[Queue] ${i.title || i.keyphrase} (${statusLabel})`;
+      if ((queueId && String(i.id) === String(queueId)) || (articleId && String(i.id) === String(articleId)) || (title && i.title === title)) {
         opt.selected = true;
       }
       dom.schArticleSelect.appendChild(opt);
     });
+
+    // Add Manager items
+    if (state.articles) {
+      state.articles.forEach(i => {
+        const opt = document.createElement("option");
+        opt.value = `manager_${i.id}`;
+        opt.textContent = `[Manager] ${i.title || i.keyphrase} (${i.status || "draft"})`;
+        // Only select manager item if no queue item was matched
+        if (!dom.schArticleSelect.value && ((articleId && String(i.id) === String(articleId)) || (title && i.title === title))) {
+          opt.selected = true;
+        }
+        dom.schArticleSelect.appendChild(opt);
+      });
+    }
   }
 
   dom.scheduleModal.classList.add("active");
@@ -1673,12 +2100,41 @@ function closeScheduleModal() {
 }
 
 async function saveScheduleModal() {
-  const selectedId = dom.schArticleSelect ? dom.schArticleSelect.value : null;
+  const selectedValue = dom.schArticleSelect ? dom.schArticleSelect.value : "";
   const action = dom.schActionSelect ? dom.schActionSelect.value : "publish";
   const dateStr = dom.schDateInput ? dom.schDateInput.value : "";
   const timeStr = dom.schTimeInput ? dom.schTimeInput.value : "09:00";
 
-  const targetItem = [...state.queue, ...state.articles].find(i => String(i.id) === String(selectedId)) || {};
+  let targetItem = null;
+  if (selectedValue.startsWith("queue_")) {
+    const qId = selectedValue.replace("queue_", "");
+    targetItem = state.queue.find(i => String(i.id) === qId);
+  } else if (selectedValue.startsWith("manager_")) {
+    const mId = selectedValue.replace("manager_", "");
+    targetItem = state.articles ? state.articles.find(i => String(i.id) === mId) : null;
+  } else if (selectedValue) {
+    targetItem = state.queue.find(i => String(i.id) === String(selectedValue)) ||
+                 (state.articles ? state.articles.find(i => String(i.id) === String(selectedValue)) : null);
+  }
+
+  if (!targetItem) {
+    const queueId = dom.schQueueId ? dom.schQueueId.value : null;
+    if (queueId) {
+      targetItem = state.queue.find(i => String(i.id) === String(queueId));
+    }
+  }
+
+  if (!targetItem) {
+    showToast("Please select an article to publish or schedule.", "error");
+    return;
+  }
+
+  // Ensure full article content is passed
+  const articleContent = targetItem.article || targetItem.content || "";
+  const imagesList = targetItem.images || targetItem.articleImages || [];
+
+  showPublishingProgressModal(action, targetItem.title || targetItem.keyphrase);
+  if (dom.btnSaveScheduleModal) dom.btnSaveScheduleModal.disabled = true;
 
   try {
     const res = await fetch(apiPath("/api/articles/schedule-publish"), {
@@ -1686,27 +2142,30 @@ async function saveScheduleModal() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         articleId: targetItem.id,
-        title: targetItem.title,
-        keyphrase: targetItem.keyphrase,
+        title: targetItem.title || targetItem.keyphrase,
+        keyphrase: targetItem.keyphrase || targetItem.title,
         action,
         date: `${dateStr} ${timeStr}`,
-        content: targetItem.article || "",
-        images: targetItem.images || targetItem.articleImages || []
+        content: articleContent,
+        images: imagesList
       })
     });
 
-    if (res.ok) {
+    const data = await res.json();
+    if (res.ok && data.success) {
       showToast(`Article successfully ${action === "publish" ? "published" : "scheduled"}!`, "success");
       closeScheduleModal();
       loadQueue();
-      loadArticles();
-      renderCalendar();
+      if (typeof loadArticles === "function") loadArticles();
+      if (typeof renderCalendar === "function") renderCalendar();
     } else {
-      const err = await res.json().catch(() => ({}));
-      showToast(`Failed to ${action}: ${err.error || err.message || "Server error"}`, "error");
+      showToast(`Failed to ${action}: ${data.wpError || data.error || "Server error"}`, "error");
     }
   } catch (e) {
     showToast(`Error: ${e.message}`, "error");
+  } finally {
+    hidePublishingProgressModal();
+    if (dom.btnSaveScheduleModal) dom.btnSaveScheduleModal.disabled = false;
   }
 }
 
@@ -1725,14 +2184,77 @@ function editQueueItem(id) {
   if (item) openEditContentModal(item);
 }
 
-// ── Edit Content Modal ───────────────────────────────────────────
+// ── Edit Content Modal & SEO Parser ──────────────────────────────
+function parseArticleSeoFromMarkdown(rawMarkdown, fallbackItem = {}) {
+  if (!rawMarkdown && !fallbackItem) return {};
+  const result = {
+    metaTitle: fallbackItem.metaTitle || fallbackItem.title || '',
+    focusKeyphrase: fallbackItem.focusKeyphrase || fallbackItem.keyphrase || '',
+    metaDescription: fallbackItem.metaDescription || fallbackItem.description || '',
+    urlSlug: fallbackItem.urlSlug || fallbackItem.slug || '',
+    pageRole: fallbackItem.pageRole || '',
+    categories: fallbackItem.categories || fallbackItem.category || '',
+    tags: fallbackItem.tags || '',
+    excerpt: fallbackItem.excerpt || ''
+  };
+
+  if (rawMarkdown) {
+    const match = rawMarkdown.match(/(?:^|\n)>\s*\*\*SEO Metadata:\*\*([\s\S]*?)(?=\n\s*\n|\n---|#|$)/i) ||
+                  rawMarkdown.match(/(?:^|\n)#{1,4}\s*SEO Metadata([\s\S]*?)(?=\n\s*\n|\n---|#|$)/i) ||
+                  rawMarkdown.match(/(?:^|\n)\*\*SEO Metadata:\*\*([\s\S]*?)(?=\n\s*\n|\n---|#|$)/i);
+
+    if (match) {
+      const lines = match[1].split('\n');
+      for (const line of lines) {
+        const titleM = line.match(/\*\*Meta Title:\*\*\s*(.+)/i);
+        if (titleM) result.metaTitle = titleM[1].trim();
+
+        const kpM = line.match(/\*\*Focus Keyphrase:\*\*\s*(.+)/i);
+        if (kpM) result.focusKeyphrase = kpM[1].trim();
+
+        const descM = line.match(/\*\*Meta Description:\*\*\s*(.+)/i);
+        if (descM) result.metaDescription = descM[1].trim();
+
+        const slugM = line.match(/\*\*URL Slug:\*\*\s*(.+)/i);
+        if (slugM) result.urlSlug = slugM[1].trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+
+        const roleM = line.match(/\*\*Page Role:\*\*\s*(.+)/i);
+        if (roleM && roleM[1].trim() !== 'undefined') result.pageRole = roleM[1].trim();
+
+        const catM = line.match(/\*\*Categories:\*\*\s*(.+)/i);
+        if (catM && catM[1].trim() !== '[Your Categories]' && catM[1].trim() !== 'undefined') result.categories = catM[1].trim();
+
+        const tagsM = line.match(/\*\*Tags:\*\*\s*(.+)/i);
+        if (tagsM && tagsM[1].trim() !== '[Your Tags]' && tagsM[1].trim() !== 'undefined') result.tags = tagsM[1].trim();
+
+        const excerptM = line.match(/\*\*Excerpt:\*\*\s*(.+)/i);
+        if (excerptM && excerptM[1].trim() !== '[Your Excerpt]' && excerptM[1].trim() !== 'undefined') result.excerpt = excerptM[1].trim();
+      }
+    }
+  }
+
+  return result;
+}
+
 function openEditContentModal(itemToEdit = null) {
   if (!dom.editContentModal) return;
-  const item = itemToEdit || state.queue.find(q => q.id === state.activeItemId);
+  const item = itemToEdit || state.queue.find(q => q.id === state.activeItemId) || (state.articles ? state.articles.find(a => a.id === state.activeItemId) : null);
   if (!item) return;
 
   state.activeItemId = item.id;
-  if (dom.editContentTextarea) dom.editContentTextarea.value = item.article || "";
+  const rawArticle = item.article || "";
+  const parsedSeo = parseArticleSeoFromMarkdown(rawArticle, item);
+
+  if (dom.metaKeyphraseInput) dom.metaKeyphraseInput.value = item.keyphrase || item.focusKeyphrase || parsedSeo.focusKeyphrase || "";
+  if (dom.metaTitleInput) dom.metaTitleInput.value = item.metaTitle || item.title || parsedSeo.metaTitle || "";
+  if (dom.metaSlugInput) dom.metaSlugInput.value = item.urlSlug || item.slug || parsedSeo.urlSlug || "";
+  if (dom.metaPageRoleInput) dom.metaPageRoleInput.value = item.pageRole || parsedSeo.pageRole || "";
+  if (dom.metaCategoriesInput) dom.metaCategoriesInput.value = item.categories || item.category || parsedSeo.categories || "";
+  if (dom.metaTagsInput) dom.metaTagsInput.value = item.tags || parsedSeo.tags || "";
+  if (dom.metaDescriptionInput) dom.metaDescriptionInput.value = item.metaDescription || item.description || parsedSeo.metaDescription || "";
+  if (dom.metaExcerptInput) dom.metaExcerptInput.value = item.excerpt || parsedSeo.excerpt || "";
+
+  if (dom.editContentTextarea) dom.editContentTextarea.value = rawArticle;
   dom.editContentModal.classList.add("active");
 }
 
@@ -1741,17 +2263,93 @@ function closeEditContentModal() {
 }
 
 async function saveEditContentModal() {
-  const item = state.queue.find(q => q.id === state.activeItemId);
+  let item = state.queue.find(q => q.id === state.activeItemId);
+  if (!item && state.articles) {
+    item = state.articles.find(a => a.id === state.activeItemId);
+  }
   if (!item) return;
 
-  item.article = dom.editContentTextarea ? dom.editContentTextarea.value : item.article;
+  const focusKeyphrase = dom.metaKeyphraseInput ? dom.metaKeyphraseInput.value.trim() : (item.keyphrase || item.focusKeyphrase || "");
+  const metaTitle = dom.metaTitleInput ? dom.metaTitleInput.value.trim() : (item.metaTitle || item.title || "");
+  const urlSlug = dom.metaSlugInput ? dom.metaSlugInput.value.trim() : (item.urlSlug || item.slug || "");
+  const pageRole = dom.metaPageRoleInput ? dom.metaPageRoleInput.value.trim() : (item.pageRole || "");
+  const categories = dom.metaCategoriesInput ? dom.metaCategoriesInput.value.trim() : (item.categories || item.category || "");
+  const tags = dom.metaTagsInput ? dom.metaTagsInput.value.trim() : (item.tags || "");
+  const metaDescription = dom.metaDescriptionInput ? dom.metaDescriptionInput.value.trim() : (item.metaDescription || item.description || "");
+  const excerpt = dom.metaExcerptInput ? dom.metaExcerptInput.value.trim() : (item.excerpt || "");
+  let rawContent = dom.editContentTextarea ? dom.editContentTextarea.value : (item.article || "");
+
+  item.keyphrase = focusKeyphrase;
+  item.focusKeyphrase = focusKeyphrase;
+  item.title = metaTitle || item.title;
+  item.metaTitle = metaTitle;
+  item.slug = urlSlug;
+  item.urlSlug = urlSlug;
+  item.pageRole = pageRole;
+  item.categories = categories;
+  item.category = categories;
+  item.tags = tags;
+  item.metaDescription = metaDescription;
+  item.description = metaDescription;
+  item.excerpt = excerpt;
+
+  const newSeoBlock = `> **SEO Metadata:**
+> - **Meta Title:** ${metaTitle}
+> - **Focus Keyphrase:** ${focusKeyphrase}
+> - **Meta Description:** ${metaDescription}
+> - **URL Slug:** ${urlSlug}
+> - **Page Role:** ${pageRole}
+> - **Categories:** ${categories}
+> - **Tags:** ${tags}
+> - **Excerpt:** ${excerpt}`;
+
+  const seoBlockRegex = /(?:^|\n)>\s*\*\*SEO Metadata:\*\*([\s\S]*?)(?=\n\s*\n|\n---|#|$)/i;
+  if (seoBlockRegex.test(rawContent)) {
+    rawContent = rawContent.replace(seoBlockRegex, `
+${newSeoBlock}
+`);
+  } else {
+    if (metaTitle || focusKeyphrase || metaDescription || urlSlug) {
+      rawContent = `${newSeoBlock}
+
+---
+
+${rawContent.trim()}`;
+    }
+  }
+
+  item.article = rawContent;
   item.wordCount = countWords(item.article);
+
+  const qItem = state.queue.find(q => q.id === item.id);
+  if (qItem) {
+    Object.assign(qItem, item);
+  }
+
+  if (state.articles) {
+    const mIndex = state.articles.findIndex(a => a.id === item.id || (a.keyphrase && a.keyphrase === item.keyphrase) || (a.title && a.title === item.title));
+    if (mIndex !== -1) {
+      Object.assign(state.articles[mIndex], item);
+      saveArticleItem(state.articles[mIndex]);
+    }
+  }
 
   saveQueue();
   renderQueue();
+  if (state.articles) renderArticles();
   renderPreview();
   closeEditContentModal();
-  showToast("Article content updated.", "success");
+  showToast("Article content & SEO metadata updated successfully!", "success");
+
+  try {
+    await fetch(apiPath("/api/queue"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state.queue)
+    });
+  } catch (e) {
+    console.error("Failed to sync queue to backend:", e);
+  }
 }
 
 // ── Settings Modal & Theme ───────────────────────────────────────
@@ -1777,6 +2375,55 @@ function closeModal() {
   if (dom.settingsModal) dom.settingsModal.classList.remove("active");
 }
 
+async function syncWordPressData() {
+  showToast("Syncing articles with WordPress REST API...", "info");
+  try {
+    const res = await fetch(apiPath("/api/articles/sync-wp"), { method: "POST" });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      let toastMsg = data.message || "WordPress sync complete!";
+      if (data.purgedCount > 0) {
+        toastMsg += ` (${data.purgedCount} deleted WP posts cleaned up)`;
+      }
+      showToast(toastMsg, "success");
+    } else {
+      showToast(`WordPress Sync Warning: ${data.error || "Failed to sync WordPress data."}`, "error");
+    }
+    await loadArticles();
+    await loadQueue();
+    if (typeof renderCalendar === "function") renderCalendar();
+  } catch (err) {
+    showToast(`Sync Error: ${err.message}`, "error");
+  }
+}
+
+async function testWpConnection() {
+  const wpUrl = dom.wpSiteUrlInput ? dom.wpSiteUrlInput.value.trim() : "";
+  const wpUsername = dom.wpUsernameInput ? dom.wpUsernameInput.value.trim() : "";
+  const wpAppPassword = dom.wpAppPasswordInput ? dom.wpAppPasswordInput.value.trim() : "";
+
+  showToast("Testing WordPress API connection...", "info");
+  try {
+    const res = await fetch(apiPath("/api/admin/test-wp-connection"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ wpUrl, wpUsername, wpAppPassword })
+    });
+    const data = await res.json();
+    if (data.success && data.authenticated) {
+      showToast(`✅ ${data.message}`, "success");
+    } else if (data.success) {
+      showToast(`ℹ️ ${data.message}`, "info");
+    } else {
+      showToast(`❌ ${data.error || "WordPress connection test failed."}`, "error");
+    }
+    return data;
+  } catch (err) {
+    showToast(`❌ Connection Test Error: ${err.message}`, "error");
+    return { success: false, error: err.message };
+  }
+}
+
 async function saveSettings() {
   state.apiKey = dom.apiKeyInput ? dom.apiKeyInput.value.trim() : "";
   state.openaiApiKey = dom.openaiKeyInput ? dom.openaiKeyInput.value.trim() : "";
@@ -1786,28 +2433,52 @@ async function saveSettings() {
   localStorage.setItem("af-openai-key", state.openaiApiKey);
   localStorage.setItem("af-model", state.model);
 
-  // Save WP settings to server
+  const wpUrl = dom.wpSiteUrlInput ? dom.wpSiteUrlInput.value.trim() : "";
+  const wpUsername = dom.wpUsernameInput ? dom.wpUsernameInput.value.trim() : "";
+  const wpAppPassword = dom.wpAppPasswordInput ? dom.wpAppPasswordInput.value.trim() : "";
+
+  showToast("Saving settings & validating WordPress API...", "info");
+
   try {
     const token = localStorage.getItem("af-admin-token");
-    await fetch(apiPath("/api/admin/settings"), {
+    const res = await fetch(apiPath("/api/admin/settings"), {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        wpUrl: dom.wpSiteUrlInput ? dom.wpSiteUrlInput.value.trim() : "",
-        wpUsername: dom.wpUsernameInput ? dom.wpUsernameInput.value.trim() : "",
-        wpAppPassword: dom.wpAppPasswordInput ? dom.wpAppPasswordInput.value.trim() : ""
+        wpUrl,
+        wpUsername,
+        wpAppPassword,
+        testConnection: true
       })
     });
+
+    if (res.ok) {
+      const data = await res.json();
+      const wpV = data.wpVerification;
+      if (wpV) {
+        if (wpV.success && wpV.authenticated) {
+          showToast(`✅ Settings saved! Connected to WordPress as "${wpV.user}".`, "success");
+        } else if (wpV.success) {
+          showToast(`ℹ️ Settings saved! Connected to WordPress REST API (Public Access).`, "info");
+        } else {
+          showToast(`⚠️ Settings saved, but WP API Check Failed: ${wpV.error}`, "error");
+        }
+      } else {
+        showToast("Settings saved successfully.", "success");
+      }
+    } else {
+      showToast("Failed to save settings to server.", "error");
+    }
   } catch (e) {
     console.error("Failed to save WP settings:", e);
+    showToast(`Error: ${e.message}`, "error");
   }
 
   updateApiStatus();
   closeModal();
-  showToast("Settings saved successfully.", "success");
 }
 
 function toggleKeyVisibility() {
@@ -1822,12 +2493,9 @@ function toggleOpenaiKeyVisibility() {
 
 function updateApiStatus() {
   if (!dom.apiStatus) return;
-  if (state.apiKey) {
-    dom.apiStatus.className = "status-indicator active";
-    dom.apiStatus.querySelector(".status-text").textContent = "API Configured";
-  } else {
-    dom.apiStatus.className = "status-indicator inactive";
-    dom.apiStatus.querySelector(".status-text").textContent = "API Key Required";
+  const statusTxt = dom.apiStatus.querySelector(".status-text");
+  if (statusTxt) {
+    statusTxt.textContent = state.apiKey ? "API Configured" : "API Key Required";
   }
 }
 
@@ -1873,10 +2541,10 @@ function compressImage(base64, maxWidth = 1000, maxHeight = 1000, quality = 0.75
 
 async function uploadImageToServer(base64Data) {
   try {
-    const res = await fetch(apiPath("/api/upload-image"), {
+    const res = await fetch(apiPath("/api/upload"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ base64: base64Data })
+      body: JSON.stringify({ imageBase64: base64Data, base64: base64Data })
     });
     if (res.ok) {
       const data = await res.json();

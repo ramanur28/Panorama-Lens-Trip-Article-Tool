@@ -209,9 +209,9 @@ app.use(express.static('dist', {
 }));
 app.use('/uploads', express.static(path.join(SETTINGS_DIR, 'uploads')));
 
-// Image Upload Endpoint
-app.post('/api/upload', (req, res) => {
-  const { imageBase64 } = req.body;
+// Image Upload Endpoint (handles both /api/upload and /api/upload-image)
+app.post(['/api/upload', '/api/upload-image'], (req, res) => {
+  const imageBase64 = req.body.imageBase64 || req.body.base64;
   if (!imageBase64) {
     return res.status(400).json({ error: 'No image data provided' });
   }
@@ -273,7 +273,38 @@ app.get('/api/admin/check-session', (req, res) => {
   res.json({ loggedIn: false });
 });
 
-app.post('/api/admin/settings', (req, res) => {
+app.post('/api/admin/test-wp-connection', async (req, res) => {
+  const { wpUrl, wpUsername, wpAppPassword } = req.body;
+  const result = await verifyWordPressConfig(wpUrl, wpUsername, wpAppPassword);
+  return res.json(result);
+});
+
+app.post('/api/articles/sync-wp', async (req, res) => {
+  try {
+    const adminSettings = getAdminSettings();
+    const wpUsername = adminSettings.wpUsername || process.env.WP_USERNAME;
+    const wpAppPassword = adminSettings.wpAppPassword || process.env.WP_APPLICATION_PASSWORD;
+    const wpUrl = adminSettings.wpUrl || process.env.WP_URL || 'https://panoramalenstrip.com';
+
+    const connCheck = await verifyWordPressConfig(wpUrl, wpUsername, wpAppPassword);
+    const result = await syncWordPressArticles();
+
+    return res.json({
+      success: true,
+      updatedCount: result.updatedCount,
+      addedCount: result.addedCount,
+      total: result.total,
+      wpAuth: connCheck.authenticated,
+      wpError: connCheck.error || null,
+      message: `WordPress sync complete! Updated ${result.updatedCount} items, added ${result.addedCount} new items.`
+    });
+  } catch (err) {
+    console.error('WordPress Sync Endpoint Error:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/settings', async (req, res) => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
   
@@ -281,30 +312,40 @@ app.post('/api/admin/settings', (req, res) => {
     return res.status(403).json({ error: 'Unauthorized' });
   }
   
-  const { tone, customPrompt, targetAudience, brand, targetWordCount, wordCountMode, wordCountDivisor, targetLanguage, ctaLink } = req.body;
-  const mode = wordCountMode || 'total';
-  const divisor = Math.min(50, Math.max(2, parseInt(wordCountDivisor) || 10));
-  let wordCount = parseInt(targetWordCount);
-  if (mode === 'total') {
-    wordCount = Math.min(4000, Math.max(500, wordCount || 3000));
-  } else {
-    wordCount = Math.min(1000, Math.max(50, wordCount || 300));
-  }
+  const { 
+    tone, customPrompt, targetAudience, brand, targetWordCount, 
+    wordCountMode, wordCountDivisor, targetLanguage, ctaLink,
+    wpUrl, wpUsername, wpAppPassword, testConnection 
+  } = req.body;
+
+  const currentSettings = getAdminSettings();
+  const mode = wordCountMode || currentSettings.wordCountMode || 'total';
+  const divisor = Math.min(50, Math.max(2, parseInt(wordCountDivisor) || currentSettings.wordCountDivisor || 10));
+  let wordCount = parseInt(targetWordCount) || currentSettings.targetWordCount || 3000;
 
   const updated = {
-    tone: tone || 'Professional',
-    customPrompt: customPrompt || '',
-    targetAudience: targetAudience || '',
-    brand: brand || '',
+    ...currentSettings,
+    tone: tone || currentSettings.tone || 'Professional',
+    customPrompt: customPrompt !== undefined ? customPrompt : (currentSettings.customPrompt || ''),
+    targetAudience: targetAudience !== undefined ? targetAudience : (currentSettings.targetAudience || ''),
+    brand: brand !== undefined ? brand : (currentSettings.brand || ''),
     wordCountMode: mode,
     wordCountDivisor: divisor,
     targetWordCount: wordCount,
-    targetLanguage: targetLanguage || 'English',
-    ctaLink: ctaLink || ''
+    targetLanguage: targetLanguage || currentSettings.targetLanguage || 'English',
+    ctaLink: ctaLink !== undefined ? ctaLink : (currentSettings.ctaLink || ''),
+    wpUrl: wpUrl !== undefined ? wpUrl : (currentSettings.wpUrl || ''),
+    wpUsername: wpUsername !== undefined ? wpUsername : (currentSettings.wpUsername || ''),
+    wpAppPassword: wpAppPassword !== undefined ? wpAppPassword : (currentSettings.wpAppPassword || '')
   };
   
+  let connTestResult = null;
+  if (testConnection || updated.wpUrl || updated.wpUsername) {
+    connTestResult = await verifyWordPressConfig(updated.wpUrl, updated.wpUsername, updated.wpAppPassword);
+  }
+
   if (saveAdminSettings(updated)) {
-    res.json({ success: true, settings: updated });
+    res.json({ success: true, settings: updated, wpVerification: connTestResult });
   } else {
     res.status(500).json({ error: 'Failed to save settings' });
   }
@@ -400,6 +441,77 @@ function normalizeLink(url) {
   return url.toLowerCase().replace(/https?:\/\/(www\.)?/, '').replace(/\/$/, '').trim();
 }
 
+// Verification helper to check WordPress REST API connectivity & auth
+async function verifyWordPressConfig(url, username, password) {
+  const adminSettings = getAdminSettings();
+  const rawUrl = url !== undefined ? url : (adminSettings.wpUrl || process.env.WP_URL || 'https://panoramalenstrip.com');
+  const wpBaseUrl = (rawUrl || 'https://panoramalenstrip.com').replace(/\/$/, '');
+  const cleanUser = (username !== undefined ? username : (adminSettings.wpUsername || process.env.WP_USERNAME || '')).trim();
+  const rawPass = password !== undefined ? password : (adminSettings.wpAppPassword || process.env.WP_APPLICATION_PASSWORD || '');
+  const cleanPass = (rawPass || '').replace(/\s+/g, '');
+
+  if (!wpBaseUrl) {
+    return { success: false, error: 'WordPress Site URL is required.' };
+  }
+
+  const headers = { 'User-Agent': 'Panorama-Lens-Trip-Article-Tool/1.0' };
+  let isAuthenticated = false;
+
+  if (cleanUser && cleanPass) {
+    const credentials = Buffer.from(`${cleanUser}:${cleanPass}`).toString('base64');
+    headers['Authorization'] = `Basic ${credentials}`;
+    isAuthenticated = true;
+  }
+
+  try {
+    if (isAuthenticated) {
+      const meRes = await fetch(`${wpBaseUrl}/wp-json/wp/v2/users/me`, { headers });
+      if (meRes.ok) {
+        const userData = await meRes.json();
+        return {
+          success: true,
+          authenticated: true,
+          user: userData.name || userData.slug || cleanUser,
+          message: `Successfully connected & authenticated with WordPress as "${userData.name || cleanUser}"!`
+        };
+      } else if (meRes.status === 401 || meRes.status === 403) {
+        return {
+          success: false,
+          authenticated: false,
+          error: `WordPress Authentication Failed (HTTP ${meRes.status}). Please check your WP Username and Application Password.`
+        };
+      }
+    }
+
+    // Fallback public check
+    const testRes = await fetch(`${wpBaseUrl}/wp-json/wp/v2/posts?per_page=1`, { headers });
+    if (testRes.ok) {
+      if (isAuthenticated) {
+        return {
+          success: false,
+          authenticated: false,
+          error: `Connected to site ${wpBaseUrl}, but WordPress Authentication failed. Please verify your Application Password.`
+        };
+      }
+      return {
+        success: true,
+        authenticated: false,
+        message: `Connected to WordPress REST API at ${wpBaseUrl} (Public access only).`
+      };
+    } else {
+      return {
+        success: false,
+        error: `Could not connect to WordPress REST API at ${wpBaseUrl} (HTTP ${testRes.status}).`
+      };
+    }
+  } catch (err) {
+    return {
+      success: false,
+      error: `Network error connecting to ${wpBaseUrl}: ${err.message}`
+    };
+  }
+}
+
 // Fetch all posts from WordPress REST API
 async function fetchAllWordPressPosts() {
   let posts = [];
@@ -407,10 +519,13 @@ async function fetchAllWordPressPosts() {
   const perPage = 100;
   let hasMore = true;
   
-  const wpUsername = process.env.WP_USERNAME || process.env.WORDPRESS_USERNAME;
-  const wpAppPassword = process.env.WP_APPLICATION_PASSWORD || process.env.WORDPRESS_APPLICATION_PASSWORD;
+  const adminSettings = getAdminSettings();
+  const wpBaseUrl = (adminSettings.wpUrl || process.env.WP_URL || process.env.WORDPRESS_URL || 'https://panoramalenstrip.com').replace(/\/$/, '');
+  const wpUsername = (adminSettings.wpUsername || process.env.WP_USERNAME || process.env.WORDPRESS_USERNAME || '').trim();
+  const rawPass = adminSettings.wpAppPassword || process.env.WP_APPLICATION_PASSWORD || process.env.WORDPRESS_APPLICATION_PASSWORD || '';
+  const wpAppPassword = rawPass.replace(/\s+/g, '');
   
-  const headers = {};
+  const headers = { 'User-Agent': 'Panorama-Lens-Trip-Article-Tool/1.0' };
   let statusParam = 'publish';
   
   if (wpUsername && wpAppPassword) {
@@ -422,15 +537,14 @@ async function fetchAllWordPressPosts() {
     console.log('WordPress credentials not provided. Fetching public published posts only.');
   }
   
-  while (hasMore) {
+  while (hasMore && page <= 10) {
     try {
-      const url = `https://panoramalenstrip.com/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}&status=${statusParam}`;
+      const url = `${wpBaseUrl}/wp-json/wp/v2/posts?per_page=${perPage}&page=${page}&status=${statusParam}`;
       const res = await fetch(url, { headers });
       if (!res.ok) {
-        // If auth fails when querying non-publish statuses, fallback to public publish only
         if (res.status === 401 || res.status === 403) {
           if (statusParam !== 'publish') {
-            console.warn('WordPress authentication failed. Falling back to public published posts only.');
+            console.warn('WordPress authentication failed during posts fetch. Falling back to public published posts only.');
             statusParam = 'publish';
             delete headers['Authorization'];
             continue; // Retry page with public access
@@ -473,20 +587,23 @@ function decodeWpHtmlEntities(text) {
     .replace(/&#8221;/g, '"');
 }
 
-// Sync function (fetches published and scheduled/future posts from WordPress and updates or imports them)
+// Sync function (fetches published, future/scheduled, and draft posts from WordPress and updates, imports, or purges deleted articles)
 async function syncWordPressArticles() {
   const wpPosts = await fetchAllWordPressPosts();
   const articles = getManagerItems();
   let updatedCount = 0;
   let addedCount = 0;
+  let purgedCount = 0;
   
   const matchedWpIds = new Set();
+  const todayStr = new Date().toISOString().split('T')[0];
 
   for (let i = 0; i < articles.length; i++) {
     const article = articles[i];
     
     // Find matching post in WP posts
     const match = wpPosts.find(p => {
+      if (article.wpPostId && String(p.id) === String(article.wpPostId)) return true;
       const rawTitle = p.title?.rendered || '';
       const decodedWpTitle = decodeWpHtmlEntities(rawTitle);
       const wpTitleNorm = normalizeTitle(decodedWpTitle);
@@ -508,6 +625,7 @@ async function syncWordPressArticles() {
     
     if (match) {
       matchedWpIds.add(match.id);
+      article.wpPostId = match.id;
       let targetStatus = 'telah_dibuat';
       if (match.status === 'future') {
         targetStatus = 'dijadwalkan';
@@ -528,14 +646,36 @@ async function syncWordPressArticles() {
       }
       if (targetStatus === 'telah_dibuat' && dateStr && article.publishedDate !== dateStr) {
         article.publishedDate = dateStr;
+        article.scheduledDate = null;
         changed = true;
       }
       if (targetStatus === 'dijadwalkan' && dateStr && article.scheduledDate !== dateStr) {
         article.scheduledDate = dateStr;
+        article.publishedDate = null;
         changed = true;
       }
 
       if (changed) updatedCount++;
+    } else {
+      // Post was not found in WordPress posts (e.g. deleted or trashed on WordPress)
+      if (article.status === 'telah_dibuat' || article.status === 'dijadwalkan' || article.wpPostId || (article.link && article.link.includes('panoramalenstrip.com'))) {
+        article.status = 'belum_dibuat';
+        article.publishedDate = null;
+        article.scheduledDate = null;
+        article.link = '';
+        delete article.wpPostId;
+        purgedCount++;
+      }
+    }
+
+    // Safety check for past scheduled dates
+    if (article.status === 'dijadwalkan' && article.scheduledDate) {
+      const schDate = article.scheduledDate.split(' ')[0];
+      if (schDate < todayStr) {
+        article.status = 'belum_dibuat';
+        article.scheduledDate = null;
+        updatedCount++;
+      }
     }
   }
 
@@ -551,7 +691,7 @@ async function syncWordPressArticles() {
     if (p.status === 'future') targetStatus = 'dijadwalkan';
     else if (p.status === 'draft' || p.status === 'pending') targetStatus = 'draft';
 
-    const dateStr = p.date ? p.date.split('T')[0] : new Date().toISOString().split('T')[0];
+    const dateStr = p.date ? p.date.split('T')[0] : todayStr;
     const nextId = articles.length > 0 ? Math.max(...articles.map(a => a.id)) + 1 : 1;
 
     articles.push({
@@ -572,11 +712,70 @@ async function syncWordPressArticles() {
     addedCount++;
   }
   
-  if (updatedCount > 0 || addedCount > 0) {
+  if (updatedCount > 0 || addedCount > 0 || purgedCount > 0) {
     saveManagerItems(articles);
   }
+
+  // Also sync matching items in queue (data/articles.json)
+  const queueItems = getQueueItems();
+  let queueChanged = false;
+  queueItems.forEach(qItem => {
+    const match = wpPosts.find(p => {
+      const rawTitle = p.title?.rendered || '';
+      const decodedWpTitle = decodeWpHtmlEntities(rawTitle);
+      const wpTitleNorm = normalizeTitle(decodedWpTitle);
+      const qTitleNorm = normalizeTitle(qItem.title);
+      const qKpNorm = normalizeTitle(qItem.keyphrase);
+      if (qItem.link && normalizeLink(p.link) === normalizeLink(qItem.link)) return true;
+      if (wpTitleNorm && (wpTitleNorm === qTitleNorm || wpTitleNorm === qKpNorm)) return true;
+      return false;
+    });
+
+    if (match) {
+      const dateStr = match.date ? match.date.split('T')[0] : null;
+      if (match.status === 'future') {
+        qItem.status = 'dijadwalkan';
+        qItem.scheduledDate = dateStr;
+        delete qItem.publishedDate;
+        queueChanged = true;
+      } else if (match.status === 'publish') {
+        qItem.status = 'complete';
+        qItem.publishedDate = dateStr;
+        delete qItem.scheduledDate;
+        queueChanged = true;
+      }
+      if (match.link && qItem.link !== match.link) {
+        qItem.link = match.link;
+        queueChanged = true;
+      }
+    } else {
+      // If queue item was scheduled or linked to WP but post was deleted on WP
+      if (qItem.status === 'dijadwalkan' || (qItem.link && qItem.link.includes('panoramalenstrip.com'))) {
+        if (qItem.article) qItem.status = 'complete';
+        else qItem.status = 'pending';
+        delete qItem.scheduledDate;
+        delete qItem.publishedDate;
+        qItem.link = '';
+        queueChanged = true;
+      }
+    }
+
+    // Safety check for past scheduled dates on queue items
+    if (qItem.status === 'dijadwalkan' && qItem.scheduledDate) {
+      const schDate = qItem.scheduledDate.split(' ')[0];
+      if (schDate < todayStr) {
+        qItem.status = qItem.article ? 'complete' : 'pending';
+        delete qItem.scheduledDate;
+        queueChanged = true;
+      }
+    }
+  });
+
+  if (queueChanged) {
+    saveQueueItems(queueItems);
+  }
   
-  return { updatedCount, addedCount, total: articles.length };
+  return { updatedCount, addedCount, purgedCount, total: articles.length };
 }
 
 // Helper to check if request is admin authorized
@@ -681,23 +880,37 @@ function stripInternalMetadata(md) {
   if (!md) return '';
   let clean = md;
 
-  // 1. Strip top-level SEO Metadata block (> **SEO Metadata:** ... or ## SEO Metadata)
-  clean = clean.replace(/(?:^|\n)>\s*\*\*SEO Metadata:\*\*[\s\S]*?(?=\n\s*\n#|\n#|\n---|\n###|\n##|$)/gi, '');
-  clean = clean.replace(/(?:^|\n)#{1,4}\s*SEO Metadata[\s\S]*?(?=\n\s*\n#|\n#|\n---|\n###|\n##|$)/gi, '');
-  clean = clean.replace(/(?:^|\n)\*\*SEO Metadata:\*\*[\s\S]*?(?=\n\s*\n#|\n#|\n---|\n###|\n##|$)/gi, '');
+  // 1. Strip top-level SEO Metadata block
+  clean = clean.replace(/(?:^|\n)>\s*\*\*SEO Metadata:\*\*[\s\S]*?(?=\n---\s*|\n#{1,3}\s+|\n\n[A-Za-z0-9#]|$)/gi, '');
+  clean = clean.replace(/(?:^|\n)#{1,4}\s*SEO Metadata[\s\S]*?(?=\n---\s*|\n#{1,3}\s+|\n\n[A-Za-z0-9#]|$)/gi, '');
+  clean = clean.replace(/(?:^|\n)\*\*SEO Metadata:\*\*[\s\S]*?(?=\n---\s*|\n#{1,3}\s+|\n\n[A-Za-z0-9#]|$)/gi, '');
 
-  // 2. Strip Image SEO Metadata block (### 🖼️ Image SEO Metadata ...)
-  clean = clean.replace(/(?:^|\n)#{1,4}\s*🖼️?\s*Image SEO Metadata[\s\S]*?(?=\n---\s*|\n#\s+|\n##\s+[^I]|\n#+ [A-Za-z0-9]|$)/gi, '');
-  clean = clean.replace(/(?:^|\n)###\s*🖼️?\s*Image SEO Metadata[\s\S]*?---\s*/gi, '');
-  clean = clean.replace(/(?:^|\n)###\s*Image SEO Metadata[\s\S]*?---\s*/gi, '');
+  // 2. Strip Image SEO Metadata section up to divider or main title
+  clean = clean.replace(/(?:^|\n)#{1,4}\s*🖼️?\s*Image SEO Metadata[\s\S]*?(?=\n---\s*|\n#\s+[^\n]+|$)/gi, '');
 
-  // 3. Strip standalone Image #N metadata headers & tables if any remain
-  clean = clean.replace(/(?:^|\n)#{2,4}\s*Image\s*#?\d+\s*(?:\(Location:[^\)]*\))?[\s\S]*?(?=\n#{2,4}\s*Image|\n#|\n---\s*|$)/gi, '');
+  // 3. Strip standalone Image #N metadata headers & tables if any remain before --- or # Title
+  clean = clean.replace(/(?:^|\n)#{2,4}\s*Image\s*#?\d+\s*(?:\(Location:[^\)]*\))?[\s\S]*?(?=\n#{2,4}\s*Image|\n---\s*|\n#\s+[^\n]+|$)/gi, '');
 
   // 4. Strip leading/trailing divider lines
   clean = clean.replace(/^[\s\-=_]+\n+/g, '');
 
-  return clean.trim();
+  let trimmed = clean.trim();
+
+  // Safety fallback: If stripping wiped out the body (leaving less than 100 chars out of a larger document)
+  if (md.length > 200 && trimmed.length < 100) {
+    console.warn('[stripInternalMetadata] Metadata stripping erased main content; applying line-by-line fallback filter.');
+    const lines = md.split('\n');
+    const filtered = lines.filter(line => {
+      const t = line.trim();
+      if (t.startsWith('> - **Meta') || t.startsWith('> - **Focus') || t.startsWith('> - **URL') || t.startsWith('> - **Page Role') || t.startsWith('> - **Categories') || t.startsWith('> - **Tags') || t.startsWith('> - **Excerpt') || t.startsWith('> **SEO Metadata:')) return false;
+      if (t.includes('| **File Name** |') || t.includes('| **Alt Text** |') || t.includes('| **Title** |') || t.includes('| **Caption** |') || t.includes('| **Description** |') || t.includes('| Element | Generated SEO Content |') || t.includes('| :--- | :--- |')) return false;
+      if (t.startsWith('### 🖼️ Image SEO Metadata') || t.startsWith('### Image SEO Metadata') || /^#{2,4}\s*Image\s*#?\d+/i.test(t)) return false;
+      return true;
+    });
+    trimmed = filtered.join('\n').replace(/^[\s\-=_]+\n+/g, '').trim();
+  }
+
+  return trimmed;
 }
 
 function inlineMarkdownToHtml(text) {
@@ -717,20 +930,27 @@ function renderTableBlock(lines) {
   let headerCells = [];
   let bodyRows = [];
 
-  lines.forEach((line, idx) => {
-    if (/^\|[\s\-:|]+\|$/.test(line)) {
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (/^\|?[\s\-:|]+\|?$/.test(trimmed)) {
       return;
     }
 
-    const cells = line.split('|').slice(1, -1).map(c => c.trim());
-    if (cells.length === 0) return;
+    let cells = trimmed.split('|');
+    if (trimmed.startsWith('|')) cells.shift();
+    if (trimmed.endsWith('|')) cells.pop();
+    cells = cells.map(c => c.trim());
 
-    if (idx === 0) {
+    if (cells.length === 0 || cells.every(c => c === '')) return;
+
+    if (headerCells.length === 0) {
       headerCells = cells;
     } else {
       bodyRows.push(cells);
     }
   });
+
+  if (headerCells.length === 0 && bodyRows.length === 0) return lines.join('\n');
 
   let html = '<!-- wp:table -->\n<figure class="wp-block-table"><table>';
 
@@ -768,12 +988,14 @@ function parseMarkdownTables(text) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    if (trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 2) {
+    const isTableLine = trimmed.includes('|') && /^\|?.*\|?$/.test(trimmed) && trimmed.length > 2;
+
+    if (isTableLine) {
       inTable = true;
       tableLines.push(trimmed);
     } else {
       if (inTable) {
-        outputLines.push(renderTableBlock(tableLines));
+        outputLines.push('\n\n' + renderTableBlock(tableLines) + '\n\n');
         inTable = false;
         tableLines = [];
       }
@@ -782,7 +1004,7 @@ function parseMarkdownTables(text) {
   }
 
   if (inTable && tableLines.length > 0) {
-    outputLines.push(renderTableBlock(tableLines));
+    outputLines.push('\n\n' + renderTableBlock(tableLines) + '\n\n');
   }
 
   return outputLines.join('\n');
@@ -939,8 +1161,8 @@ function markdownToHtml(rawMarkdown, imageMap = {}, options = {}) {
     let trimmed = block.trim();
     if (!trimmed) continue;
 
-    // Already a WordPress block comment (like wp:table)
-    if (trimmed.startsWith('<!-- wp:')) {
+    // Already a WordPress block comment (like wp:table) or HTML figure/table element
+    if (trimmed.startsWith('<!-- wp:') || trimmed.startsWith('<figure') || trimmed.startsWith('<table') || trimmed.startsWith('<figure class="wp-block-table">')) {
       resultBlocks.push(trimmed);
       continue;
     }
@@ -1043,6 +1265,11 @@ function markdownToHtml(rawMarkdown, imageMap = {}, options = {}) {
         }
         return '';
       });
+    }
+
+    if (paragraphContent.startsWith('<!-- wp:') || paragraphContent.startsWith('<figure') || paragraphContent.startsWith('<table')) {
+      resultBlocks.push(paragraphContent);
+      continue;
     }
 
     const paragraphText = inlineMarkdownToHtml(paragraphContent.replace(/\n/g, '<br>'));
@@ -1451,15 +1678,16 @@ async function postToWordPress({ url, username, password, title, content, action
     console.warn('[WordPress API] Could not fetch categories/tags from WordPress:', catErr.message);
   }
 
+  const finalMetaTitle = parsedArticleSeo.metaTitle || matchedItem.metaTitle || title || '';
   const yoastMetaObj = {
-    ...(focusKw ? { _yoast_wpseo_focuskw: focusKw } : {}),
-    ...(metaDesc ? { _yoast_wpseo_metadesc: metaDesc } : {}),
+    ...(focusKw ? { _yoast_wpseo_focuskw: focusKw, rank_math_focus_keyword: focusKw } : {}),
+    ...(metaDesc ? { _yoast_wpseo_metadesc: metaDesc, rank_math_description: metaDesc } : {}),
     _yoast_wpseo_is_cornerstone: isCornerstone,
-    ...(parsedArticleSeo.metaTitle ? { _yoast_wpseo_title: parsedArticleSeo.metaTitle } : {})
+    ...(finalMetaTitle ? { _yoast_wpseo_title: finalMetaTitle, rank_math_title: finalMetaTitle } : {})
   };
 
   const payload = {
-    title: title,
+    title: title || finalMetaTitle,
     status: action === 'publish' ? 'publish' : 'future',
     date: wpDateStr,
     ...(categoryIds.length > 0 ? { categories: categoryIds } : {}),
@@ -1467,7 +1695,7 @@ async function postToWordPress({ url, username, password, title, content, action
     ...(cleanSlug ? { slug: cleanSlug } : {}),
     ...(excerptText ? { excerpt: excerptText } : {}),
     ...(featuredMediaId ? { featured_media: featuredMediaId } : {}),
-    ...(htmlContent ? { content: htmlContent } : {}),
+    content: htmlContent || '',
     meta: yoastMetaObj
   };
 
@@ -1527,40 +1755,61 @@ app.post('/api/articles/schedule-publish', async (req, res) => {
   const managerItems = getManagerItems();
   const queueItems = getQueueItems();
 
-  let targetItem = null;
+  let queueItem = null;
+  let managerItem = null;
 
   if (articleId) {
-    targetItem = queueItems.find(i => String(i.id) === String(articleId)) ||
-                 managerItems.find(i => String(i.id) === String(articleId));
+    queueItem = queueItems.find(i => String(i.id) === String(articleId));
   }
-  if (!targetItem && title) {
+
+  if (title) {
     const cleanTitle = title.trim().toLowerCase();
-    targetItem = queueItems.find(i => i.title && i.title.trim().toLowerCase() === cleanTitle) ||
-                 managerItems.find(i => i.title && i.title.trim().toLowerCase() === cleanTitle);
+    if (!queueItem) {
+      queueItem = queueItems.find(i => i.title && i.title.trim().toLowerCase() === cleanTitle);
+    }
+    managerItem = managerItems.find(i => i.title && i.title.trim().toLowerCase() === cleanTitle);
   }
-  if (!targetItem && keyphrase) {
+
+  if (!queueItem && keyphrase) {
     const cleanKp = keyphrase.trim().toLowerCase();
-    targetItem = queueItems.find(i => i.keyphrase && i.keyphrase.trim().toLowerCase() === cleanKp) ||
-                 managerItems.find(i => i.keyphrase && i.keyphrase.trim().toLowerCase() === cleanKp);
+    queueItem = queueItems.find(i => i.keyphrase && i.keyphrase.trim().toLowerCase() === cleanKp);
   }
 
-  // Cross-reference between queue and manager to extract full article text & images if missing
-  const matchedQueueItem = queueItems.find(q => targetItem && String(q.id) === String(targetItem.id));
-  const matchedManagerItem = managerItems.find(m => targetItem && String(m.id) === String(targetItem.id));
+  if (!managerItem && queueItem && queueItem.managerId) {
+    managerItem = managerItems.find(i => String(i.id) === String(queueItem.managerId));
+  }
 
-  const index = managerItems.findIndex(i => (targetItem && String(i.id) === String(targetItem.id)) || (matchedManagerItem && String(i.id) === String(matchedManagerItem.id)));
-  const queueIndex = queueItems.findIndex(i => (targetItem && String(i.id) === String(targetItem.id)) || (matchedQueueItem && String(i.id) === String(matchedQueueItem.id)));
+  if (!managerItem && keyphrase) {
+    const cleanKp = keyphrase.trim().toLowerCase();
+    managerItem = managerItems.find(i => i.keyphrase && i.keyphrase.trim().toLowerCase() === cleanKp);
+  }
+
+  if (!managerItem && articleId && !title && !queueItem) {
+    managerItem = managerItems.find(i => String(i.id) === String(articleId));
+  }
 
   const targetDate = date || new Date().toISOString().split('T')[0];
-  const articleContent = content || (targetItem && targetItem.article ? targetItem.article : (matchedQueueItem && matchedQueueItem.article ? matchedQueueItem.article : (matchedManagerItem && matchedManagerItem.article ? matchedManagerItem.article : '')));
-  const articleImages = (images && images.length > 0) ? images : (targetItem && targetItem.images && targetItem.images.length > 0 ? targetItem.images : (matchedQueueItem && matchedQueueItem.images && matchedQueueItem.images.length > 0 ? matchedQueueItem.images : (matchedManagerItem && matchedManagerItem.images ? matchedManagerItem.images : [])));
+
+  // Resolve full article content: prioritize passed content, then queueItem.article, then managerItem.article
+  let articleContent = content || (queueItem && queueItem.article ? queueItem.article : (managerItem && managerItem.article ? managerItem.article : ''));
+
+  // If articleContent is still empty, search all queue items by title match
+  if (!articleContent && title) {
+    const cleanTitle = title.trim().toLowerCase();
+    const fallbackMatch = queueItems.find(q => q.title && q.title.trim().toLowerCase() === cleanTitle && q.article);
+    if (fallbackMatch) {
+      articleContent = fallbackMatch.article;
+    }
+  }
+
+  const articleImages = (images && images.length > 0) ? images : (queueItem && queueItem.images && queueItem.images.length > 0 ? queueItem.images : (managerItem && managerItem.images ? managerItem.images : []));
 
   // Attempt WP REST API post/scheduling
   const wpResult = await postToWordPress({
     url: wpCredentials ? wpCredentials.url : null,
     username: wpCredentials ? wpCredentials.username : null,
     password: wpCredentials ? wpCredentials.password : null,
-    title: title || (targetItem ? targetItem.title : 'New Article'),
+    title: title || (queueItem ? queueItem.title : (managerItem ? managerItem.title : 'New Article')),
     content: articleContent,
     action,
     date: targetDate,
@@ -1569,53 +1818,60 @@ app.post('/api/articles/schedule-publish', async (req, res) => {
 
   let wpLink = link || (wpResult.success && wpResult.wpPost ? wpResult.wpPost.link : '');
 
-  // Sync status in queue items file if present
-  if (queueIndex !== -1) {
-    if (action === 'publish') {
-      queueItems[queueIndex].status = 'complete';
-      queueItems[queueIndex].publishedDate = targetDate;
-      delete queueItems[queueIndex].scheduledDate;
-    } else {
-      queueItems[queueIndex].scheduledDate = targetDate;
-      delete queueItems[queueIndex].publishedDate;
+  // Sync status in queue items file if queue item was found
+  if (queueItem) {
+    const queueIndex = queueItems.findIndex(i => String(i.id) === String(queueItem.id));
+    if (queueIndex !== -1) {
+      if (action === 'publish') {
+        queueItems[queueIndex].status = 'complete';
+        queueItems[queueIndex].publishedDate = targetDate;
+        delete queueItems[queueIndex].scheduledDate;
+      } else {
+        queueItems[queueIndex].status = 'dijadwalkan';
+        queueItems[queueIndex].scheduledDate = targetDate;
+        delete queueItems[queueIndex].publishedDate;
+      }
+      if (wpLink) queueItems[queueIndex].link = wpLink;
+      saveQueueItems(queueItems);
     }
-    if (wpLink) queueItems[queueIndex].link = wpLink;
-    saveQueueItems(queueItems);
   }
 
-  if (index !== -1) {
-    // Update existing article status & dates
-    if (action === 'publish') {
-      managerItems[index].status = 'telah_dibuat';
-      managerItems[index].publishedDate = targetDate;
-      managerItems[index].scheduledDate = null;
-    } else {
-      managerItems[index].status = 'dijadwalkan';
-      managerItems[index].scheduledDate = targetDate;
-      managerItems[index].publishedDate = null;
+  // Sync status in manager items file if manager item present or create new entry
+  if (managerItem) {
+    const managerIndex = managerItems.findIndex(i => String(i.id) === String(managerItem.id));
+    if (managerIndex !== -1) {
+      if (action === 'publish') {
+        managerItems[managerIndex].status = 'telah_dibuat';
+        managerItems[managerIndex].publishedDate = targetDate;
+        managerItems[managerIndex].scheduledDate = null;
+      } else {
+        managerItems[managerIndex].status = 'dijadwalkan';
+        managerItems[managerIndex].scheduledDate = targetDate;
+        managerItems[managerIndex].publishedDate = null;
+      }
+      if (wpLink) managerItems[managerIndex].link = wpLink;
+      saveManagerItems(managerItems);
+      return res.json({ success: true, item: managerItems[managerIndex], wpSynced: wpResult.success, wpLink, wpError: wpResult.error });
     }
-    if (wpLink) managerItems[index].link = wpLink;
-    saveManagerItems(managerItems);
-    return res.json({ success: true, item: managerItems[index], wpSynced: wpResult.success, wpLink, wpError: wpResult.error });
-  } else {
-    // Create new article entry with scheduled/published status
-    const nextId = managerItems.length > 0 ? Math.max(...managerItems.map(i => i.id)) + 1 : 1;
-    const newItem = {
-      id: nextId,
-      pageRole: 'Cluster',
-      keyphrase: keyphrase || title || 'New Article',
-      title: title || keyphrase || 'New Article',
-      topic: '',
-      intent: 'Informational',
-      link: wpLink || '',
-      status: action === 'publish' ? 'telah_dibuat' : 'dijadwalkan',
-      scheduledDate: action === 'publish' ? null : targetDate,
-      publishedDate: action === 'publish' ? targetDate : null
-    };
-    managerItems.push(newItem);
-    saveManagerItems(managerItems);
-    return res.json({ success: true, item: newItem, wpSynced: wpResult.success, wpLink, wpError: wpResult.error });
   }
+
+  // Create new article entry in manager
+  const nextId = managerItems.length > 0 ? Math.max(...managerItems.map(i => i.id)) + 1 : 1;
+  const newItem = {
+    id: nextId,
+    pageRole: 'Cluster',
+    keyphrase: keyphrase || title || 'New Article',
+    title: title || keyphrase || 'New Article',
+    topic: '',
+    intent: 'Informational',
+    link: wpLink || '',
+    status: action === 'publish' ? 'telah_dibuat' : 'dijadwalkan',
+    scheduledDate: action === 'publish' ? null : targetDate,
+    publishedDate: action === 'publish' ? targetDate : null
+  };
+  managerItems.push(newItem);
+  saveManagerItems(managerItems);
+  return res.json({ success: true, item: newItem, wpSynced: wpResult.success, wpLink, wpError: wpResult.error });
 });
 
 // Delete an article

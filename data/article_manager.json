@@ -8,7 +8,8 @@
     "intent": "Commercial / Informational",
     "link": "https://panoramalenstrip.com/bromo-volcano-sunrise-viewpoints-timing-tours-2026/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-06"
+    "publishedDate": "2026-02-06",
+    "wpPostId": 16090
   },
   {
     "id": 2,
@@ -19,7 +20,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-bromo-sunrise-viewpoints-ranked/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-02"
+    "publishedDate": "2026-02-02",
+    "wpPostId": 16059
   },
   {
     "id": 3,
@@ -30,7 +32,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/bromo-sunrise-temperature-what-to-wear-packing-list/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-12"
+    "publishedDate": "2026-02-12",
+    "wpPostId": 16122
   },
   {
     "id": 4,
@@ -41,7 +44,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/mount-bromo-photography-guide-camera-settings/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-03"
+    "publishedDate": "2026-04-03",
+    "wpPostId": 16529
   },
   {
     "id": 5,
@@ -52,7 +56,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/bromo-volcano-sunrise-tour/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-29"
+    "publishedDate": "2026-04-29",
+    "wpPostId": 16613
   },
   {
     "id": 6,
@@ -63,7 +68,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-bromo-volcano-sunrise/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-12"
+    "publishedDate": "2026-05-12",
+    "wpPostId": 16698
   },
   {
     "id": 7,
@@ -72,9 +78,9 @@
     "title": "Bromo Volcano Sunrise from Bali",
     "topic": "How do you get to Bromo sunrise from Bali?",
     "intent": "Informational / Commercial",
-    "link": "https://panoramalenstrip.com/?p=17178",
-    "status": "dijadwalkan",
-    "scheduledDate": "2026-07-20 21:00",
+    "link": "",
+    "status": "belum_dibuat",
+    "scheduledDate": null,
     "publishedDate": null
   },
   {
@@ -84,9 +90,9 @@
     "title": "Bromo Volcano Sunrise Photography Tour: Is It Worth It?",
     "topic": "Why choose a photography tour for Bromo sunrise?",
     "intent": "Commercial",
-    "link": "https://panoramalenstrip.com/?p=17173",
-    "status": "dijadwalkan",
-    "scheduledDate": "2026-07-20",
+    "link": "",
+    "status": "belum_dibuat",
+    "scheduledDate": null,
     "publishedDate": null
   },
   {
@@ -118,7 +124,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/borneo-orangutan-tours-tanjung-puting-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-28"
+    "publishedDate": "2026-03-28",
+    "wpPostId": 16501
   },
   {
     "id": 12,
@@ -129,7 +136,8 @@
     "intent": "Transactional / Commercial",
     "link": "https://panoramalenstrip.com/klotok-houseboat-tour-tanjung-puting-borneo/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-10"
+    "publishedDate": "2026-02-10",
+    "wpPostId": 16108
   },
   {
     "id": 13,
@@ -140,7 +148,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-see-orangutans-borneo/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-01-31"
+    "publishedDate": "2026-01-31",
+    "wpPostId": 16052
   },
   {
     "id": 14,
@@ -151,7 +160,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/borneo-orangutan-photography-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-05"
+    "publishedDate": "2026-04-05",
+    "wpPostId": 16540
   },
   {
     "id": 15,
@@ -162,7 +172,8 @@
     "intent": "Commercial Investigation",
     "link": "https://panoramalenstrip.com/best-lens-for-orangutan-photography/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-21"
+    "publishedDate": "2026-04-21",
+    "wpPostId": 16587
   },
   {
     "id": 16,
@@ -173,7 +184,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/borneo-orangutan-tour-cost/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-15"
+    "publishedDate": "2026-05-15",
+    "wpPostId": 16701
   },
   {
     "id": 17,
@@ -214,7 +226,8 @@
     "intent": "Commercial / Informational",
     "link": "https://panoramalenstrip.com/tanjung-puting-national-park-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-14"
+    "publishedDate": "2026-02-14",
+    "wpPostId": 16071
   },
   {
     "id": 21,
@@ -225,7 +238,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/tanjung-puting-orangutan-tour-explained/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-26"
+    "publishedDate": "2026-02-26",
+    "wpPostId": 16281
   },
   {
     "id": 22,
@@ -236,7 +250,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/tanjung-puting-photography-tour-wildlife-2/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-24"
+    "publishedDate": "2026-03-24",
+    "wpPostId": 16471
   },
   {
     "id": 23,
@@ -247,7 +262,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-to-visit-tanjung-puting/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-07"
+    "publishedDate": "2026-04-07",
+    "wpPostId": 16542
   },
   {
     "id": 24,
@@ -258,7 +274,8 @@
     "intent": "Informational + Commercial",
     "link": "https://panoramalenstrip.com/tanjung-puting-photography-spots-river-bends-feeding/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-25"
+    "publishedDate": "2026-04-25",
+    "wpPostId": 16593
   },
   {
     "id": 25,
@@ -269,7 +286,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/drone-photography-borneo-rainforest-legal-ethical-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-17"
+    "publishedDate": "2026-05-17",
+    "wpPostId": 16705
   },
   {
     "id": 26,
@@ -330,7 +348,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/ijen-crater-travel-guide-blue-fire-hiking-photography-tambah-foto/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-18"
+    "publishedDate": "2026-02-18",
+    "wpPostId": 16139
   },
   {
     "id": 32,
@@ -341,7 +360,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/how-to-get-to-ijen-crater/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-15"
+    "publishedDate": "2026-04-15",
+    "wpPostId": 16565
   },
   {
     "id": 33,
@@ -352,7 +372,8 @@
     "intent": "Info",
     "link": "https://panoramalenstrip.com/ijen-crater-hike-difficulty/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-21"
+    "publishedDate": "2026-05-21",
+    "wpPostId": 16720
   },
   {
     "id": 34,
@@ -383,7 +404,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-to-visit-ijen-crater/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-19"
+    "publishedDate": "2026-05-19",
+    "wpPostId": 16714
   },
   {
     "id": 37,
@@ -424,7 +446,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/tumpak-sewu-waterfall-complete-travel-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-01"
+    "publishedDate": "2026-04-01",
+    "wpPostId": 16527
   },
   {
     "id": 41,
@@ -435,7 +458,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/tumpak-sewu-waterfall-hike-difficulty/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-01-17"
+    "publishedDate": "2026-01-17",
+    "wpPostId": 15945
   },
   {
     "id": 42,
@@ -446,7 +470,8 @@
     "intent": "Info / Transactional",
     "link": "https://panoramalenstrip.com/tumpak-sewu-photography/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-16"
+    "publishedDate": "2026-02-16",
+    "wpPostId": 16118
   },
   {
     "id": 43,
@@ -457,7 +482,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-to-visit-tumpak-sewu/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-17"
+    "publishedDate": "2026-04-17",
+    "wpPostId": 16576
   },
   {
     "id": 44,
@@ -468,7 +494,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/tumpak-sewu-viewpoint-vs-base-which-is-better/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-27"
+    "publishedDate": "2026-04-27",
+    "wpPostId": 16597
   },
   {
     "id": 45,
@@ -529,7 +556,8 @@
     "intent": "Commercial / Informational",
     "link": "https://panoramalenstrip.com/borobudur-tour-guide-worlds-largest-buddhist-temple/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-20"
+    "publishedDate": "2026-02-20",
+    "wpPostId": 16188
   },
   {
     "id": 51,
@@ -540,7 +568,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/borobudur-sunrise-tour-temple-access-allowed/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-02"
+    "publishedDate": "2026-03-02",
+    "wpPostId": 16270
   },
   {
     "id": 52,
@@ -551,7 +580,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/borobudur-and-prambanan-tour-one-day-itinerary/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-11"
+    "publishedDate": "2026-04-11",
+    "wpPostId": 16547
   },
   {
     "id": 53,
@@ -562,7 +592,8 @@
     "intent": "Informational / Transactional",
     "link": "https://panoramalenstrip.com/borobudur-photography-tour-spots-lighting-gear/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-01"
+    "publishedDate": "2026-05-01",
+    "wpPostId": 16655
   },
   {
     "id": 54,
@@ -583,7 +614,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/borobudur-temple-climb-rules-tickets/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-06"
+    "publishedDate": "2026-03-06",
+    "wpPostId": 16308
   },
   {
     "id": 56,
@@ -614,7 +646,8 @@
     "intent": "Commercial / Informational",
     "link": "https://panoramalenstrip.com/prambanan-tour-guide-indonesia-hindu-temple/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-22"
+    "publishedDate": "2026-02-22",
+    "wpPostId": 16190
   },
   {
     "id": 59,
@@ -625,7 +658,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/prambanan-sunset-tour-vantage-points-timing/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-09"
+    "publishedDate": "2026-04-09",
+    "wpPostId": 16549
   },
   {
     "id": 60,
@@ -636,7 +670,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/prambanan-photography-guide-drone-regulations/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-28"
+    "publishedDate": "2026-02-28",
+    "wpPostId": 16282
   },
   {
     "id": 61,
@@ -647,7 +682,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-03"
+    "publishedDate": "2026-05-03",
+    "wpPostId": 16660
   },
   {
     "id": 62,
@@ -678,7 +714,8 @@
     "intent": "Commercial / Informational",
     "link": "https://panoramalenstrip.com/ratu-boko-tour-from-prambanan/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-04"
+    "publishedDate": "2026-03-04",
+    "wpPostId": 16293
   },
   {
     "id": 65,
@@ -699,7 +736,8 @@
     "intent": "Commercial + Informational",
     "link": "https://panoramalenstrip.com/yogyakarta-tour-cultural-luxury-photography-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-02-24"
+    "publishedDate": "2026-02-24",
+    "wpPostId": 16199
   },
   {
     "id": 67,
@@ -710,7 +748,8 @@
     "intent": "Informational + Commercial",
     "link": "https://panoramalenstrip.com/yogyakarta-cultural-tour-authentic-javanese-heritage-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-20"
+    "publishedDate": "2026-03-20",
+    "wpPostId": 16428
   },
   {
     "id": 68,
@@ -721,7 +760,8 @@
     "intent": "Informational + Commercial",
     "link": "https://panoramalenstrip.com/yogyakarta-photography-tour/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-13"
+    "publishedDate": "2026-04-13",
+    "wpPostId": 16558
   },
   {
     "id": 69,
@@ -731,7 +771,8 @@
     "topic": "How can you combine Yogyakarta city highlights with Borobudur efficiently?",
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/?p=16815",
-    "status": "draft"
+    "status": "draft",
+    "wpPostId": 16815
   },
   {
     "id": 70,
@@ -762,7 +803,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-to-visit-yogyakarta-2/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-06-03"
+    "publishedDate": "2026-06-03",
+    "wpPostId": 16816
   },
   {
     "id": 73,
@@ -773,7 +815,8 @@
     "intent": "Informational + Commercial",
     "link": "https://panoramalenstrip.com/borobudur-sunrise-luxury-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-12"
+    "publishedDate": "2026-03-12",
+    "wpPostId": 16392
   },
   {
     "id": 74,
@@ -784,7 +827,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/borobudur-sunrise-photography-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-22"
+    "publishedDate": "2026-03-22",
+    "wpPostId": 16433
   },
   {
     "id": 75,
@@ -795,7 +839,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/borobudur-sunrise-best-time-weather-season/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-26"
+    "publishedDate": "2026-03-26",
+    "wpPostId": 16469
   },
   {
     "id": 76,
@@ -806,7 +851,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/dagi-hill-sunrise-borobudur-best-viewpoint/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-05"
+    "publishedDate": "2026-05-05",
+    "wpPostId": 16674
   },
   {
     "id": 77,
@@ -847,7 +893,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/bali-travel-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-10"
+    "publishedDate": "2026-03-10",
+    "wpPostId": 16383
   },
   {
     "id": 81,
@@ -868,7 +915,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/bali-photography-spots-sunrise-temples-waterfalls/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-14"
+    "publishedDate": "2026-03-14",
+    "wpPostId": 16404
   },
   {
     "id": 83,
@@ -879,7 +927,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/bali-cultural-experiences-dance-temples-cuisine/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-04-23"
+    "publishedDate": "2026-04-23",
+    "wpPostId": 16590
   },
   {
     "id": 84,
@@ -910,7 +959,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/best-time-to-visit-bali/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-25"
+    "publishedDate": "2026-05-25",
+    "wpPostId": 16761
   },
   {
     "id": 87,
@@ -931,7 +981,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/nusa-penida-tour-guide-best-routes-spots/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-18"
+    "publishedDate": "2026-03-18",
+    "wpPostId": 16421
   },
   {
     "id": 89,
@@ -951,7 +1002,8 @@
     "topic": "Why does the West Nusa Penida tour include the island’s most famous viewpoints?",
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/?p=16585",
-    "status": "draft"
+    "status": "draft",
+    "wpPostId": 16585
   },
   {
     "id": 91,
@@ -982,7 +1034,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/nusa-penida-photography-tour-best-spots/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-30"
+    "publishedDate": "2026-03-30",
+    "wpPostId": 16505
   },
   {
     "id": 94,
@@ -1003,7 +1056,8 @@
     "intent": "Informational + Commercial",
     "link": "https://panoramalenstrip.com/uluwatu-tour-bali-sunset-cliff-temple-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-03-16"
+    "publishedDate": "2026-03-16",
+    "wpPostId": 16396
   },
   {
     "id": 96,
@@ -1014,7 +1068,8 @@
     "intent": "Informational",
     "link": "https://panoramalenstrip.com/uluwatu-sunset-tour/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-05-28"
+    "publishedDate": "2026-05-28",
+    "wpPostId": 16805
   },
   {
     "id": 97,
@@ -1135,7 +1190,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/mount-bromo-trekking-vip-route-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-06-30"
+    "publishedDate": "2026-06-30",
+    "wpPostId": 16917
   },
   {
     "id": 109,
@@ -1146,7 +1202,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/king-kong-hill-trekking-bromo-zone-a-secret-path/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-06-19"
+    "publishedDate": "2026-06-19",
+    "wpPostId": 16893
   },
   {
     "id": 110,
@@ -1157,7 +1214,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/mount-kursi-trekking-bromo-zone-b-hidden-sunrise/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-06-22"
+    "publishedDate": "2026-06-22",
+    "wpPostId": 16908
   },
   {
     "id": 111,
@@ -1168,7 +1226,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/mount-bromo-crater-trekking-night-expedition/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-06-24"
+    "publishedDate": "2026-06-24",
+    "wpPostId": 16910
   },
   {
     "id": 112,
@@ -1179,7 +1238,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/mount-batok-trekking-bromo-sunset-guide/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-06-27"
+    "publishedDate": "2026-06-27",
+    "wpPostId": 16913
   },
   {
     "id": 113,
@@ -1188,8 +1248,10 @@
     "title": "Bali Culture Tour: Premium Guide to Authentic Traditions",
     "topic": "What is the most authentic way to experience Balinese culture?",
     "intent": "Informational / Commercial",
-    "link": "https://panoramalenstrip.com/?p=16987",
-    "status": "draft"
+    "link": "https://panoramalenstrip.com/premium-bali-culture-tour-authentic-traditions/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-07-03",
+    "wpPostId": 16987
   },
   {
     "id": 114,
@@ -1200,7 +1262,8 @@
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/premium-bali-temple-tour-vip-access/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-07-08"
+    "publishedDate": "2026-07-08",
+    "wpPostId": 17001
   },
   {
     "id": 115,
@@ -1209,8 +1272,10 @@
     "title": "Bali Traditional Village Photography: Expert Heritage Tour",
     "topic": "Which traditional Bali villages offer the most authentic experience?",
     "intent": "Informational / Commercial",
-    "link": "https://panoramalenstrip.com/?p=17097",
-    "status": "draft"
+    "link": "https://panoramalenstrip.com/bali-traditional-village-photography-heritage-tour/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-07-22",
+    "wpPostId": 17097
   },
   {
     "id": 116,
@@ -1220,7 +1285,8 @@
     "topic": "Where can you get a private spiritual purification in Bali?",
     "intent": "Commercial",
     "link": "https://panoramalenstrip.com/?p=17076",
-    "status": "draft"
+    "status": "draft",
+    "wpPostId": 17076
   },
   {
     "id": 117,
@@ -1231,7 +1297,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/sanghyang-jaran-bali-traditional-dance-photography/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-07-11"
+    "publishedDate": "2026-07-11",
+    "wpPostId": 17041
   },
   {
     "id": 118,
@@ -1252,7 +1319,8 @@
     "intent": "Informational / Commercial",
     "link": "https://panoramalenstrip.com/exploring-bali-artisan-village-mask-carving-barong/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-07-20"
+    "publishedDate": "2026-07-20",
+    "wpPostId": 17058
   },
   {
     "id": 120,
@@ -1343,7 +1411,8 @@
     "intent": "Informational + Commercial Investigation",
     "link": "https://panoramalenstrip.com/what-is-bromo-milky-way-photo-trip/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-07-18"
+    "publishedDate": "2026-07-18",
+    "wpPostId": 17074
   },
   {
     "id": 129,
@@ -1352,10 +1421,11 @@
     "title": "Bromo Milky Way Best Time: Seasons, Moon and Clouds",
     "topic": "When is the best time to see and photograph the Milky Way at Mount Bromo?",
     "intent": "Informational / Trip Planning",
-    "link": "https://panoramalenstrip.com/?p=17170",
-    "status": "dijadwalkan",
-    "scheduledDate": "2026-07-20",
-    "publishedDate": null
+    "link": "https://panoramalenstrip.com/when-is-the-best-time-bromo-milky-way/",
+    "status": "telah_dibuat",
+    "scheduledDate": null,
+    "publishedDate": "2026-07-24",
+    "wpPostId": 17217
   },
   {
     "id": 130,
@@ -1365,7 +1435,9 @@
     "topic": "What happens on a Bromo Milky Way photography tour, and what should be included?",
     "intent": "Commercial Investigation + Transactional",
     "link": "",
-    "status": "belum_dibuat"
+    "status": "belum_dibuat",
+    "publishedDate": null,
+    "scheduledDate": null
   },
   {
     "id": 131,
@@ -1375,7 +1447,9 @@
     "topic": "Which camera settings produce sharp Milky Way photographs at Mount Bromo?",
     "intent": "Informational",
     "link": "",
-    "status": "belum_dibuat"
+    "status": "belum_dibuat",
+    "publishedDate": null,
+    "scheduledDate": null
   },
   {
     "id": 132,
@@ -1396,7 +1470,8 @@
     "intent": "Commercial Investigation + Transactional",
     "link": "https://panoramalenstrip.com/private-bromo-milky-way-trip-from-surabaya/",
     "status": "telah_dibuat",
-    "publishedDate": "2026-07-13"
+    "publishedDate": "2026-07-13",
+    "wpPostId": 17062
   },
   {
     "id": 134,
@@ -1478,7 +1553,7 @@
   },
   {
     "id": 140,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -1985,7 +2060,7 @@
   },
   {
     "id": 179,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3116,7 +3191,7 @@
   },
   {
     "id": 266,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3129,7 +3204,7 @@
   },
   {
     "id": 267,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3142,7 +3217,7 @@
   },
   {
     "id": 268,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3155,7 +3230,7 @@
   },
   {
     "id": 269,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3168,7 +3243,7 @@
   },
   {
     "id": 270,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3181,7 +3256,7 @@
   },
   {
     "id": 271,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3194,7 +3269,7 @@
   },
   {
     "id": 272,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3207,7 +3282,7 @@
   },
   {
     "id": 273,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3220,7 +3295,7 @@
   },
   {
     "id": 274,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3233,7 +3308,7 @@
   },
   {
     "id": 275,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3246,7 +3321,7 @@
   },
   {
     "id": 276,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3259,7 +3334,7 @@
   },
   {
     "id": 277,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3272,7 +3347,7 @@
   },
   {
     "id": 278,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3285,7 +3360,7 @@
   },
   {
     "id": 279,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3298,7 +3373,7 @@
   },
   {
     "id": 280,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3311,7 +3386,7 @@
   },
   {
     "id": 281,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3324,7 +3399,7 @@
   },
   {
     "id": 282,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3337,7 +3412,7 @@
   },
   {
     "id": 283,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3350,7 +3425,7 @@
   },
   {
     "id": 284,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3363,7 +3438,7 @@
   },
   {
     "id": 285,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3376,7 +3451,7 @@
   },
   {
     "id": 286,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3389,7 +3464,7 @@
   },
   {
     "id": 287,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3402,7 +3477,7 @@
   },
   {
     "id": 288,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3415,7 +3490,7 @@
   },
   {
     "id": 289,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3428,7 +3503,7 @@
   },
   {
     "id": 290,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3441,7 +3516,7 @@
   },
   {
     "id": 291,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3454,7 +3529,7 @@
   },
   {
     "id": 292,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3467,7 +3542,7 @@
   },
   {
     "id": 293,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3480,7 +3555,7 @@
   },
   {
     "id": 294,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3493,7 +3568,7 @@
   },
   {
     "id": 295,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3511,14 +3586,14 @@
     "title": "Bromo Milky Way photography tour",
     "topic": "",
     "intent": "Informational",
-    "link": "https://panoramalenstrip.com/?p=17122",
-    "status": "dijadwalkan",
-    "scheduledDate": "2026-07-20 21:00",
+    "link": "",
+    "status": "belum_dibuat",
+    "scheduledDate": null,
     "publishedDate": null
   },
   {
     "id": 297,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3531,7 +3606,7 @@
   },
   {
     "id": 298,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3544,7 +3619,7 @@
   },
   {
     "id": 299,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3557,7 +3632,7 @@
   },
   {
     "id": 300,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3570,7 +3645,7 @@
   },
   {
     "id": 301,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3583,7 +3658,7 @@
   },
   {
     "id": 302,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3596,7 +3671,7 @@
   },
   {
     "id": 303,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3609,7 +3684,7 @@
   },
   {
     "id": 304,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3622,7 +3697,7 @@
   },
   {
     "id": 305,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3635,7 +3710,7 @@
   },
   {
     "id": 306,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3648,7 +3723,7 @@
   },
   {
     "id": 307,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3661,7 +3736,7 @@
   },
   {
     "id": 308,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3674,7 +3749,7 @@
   },
   {
     "id": 309,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3687,7 +3762,7 @@
   },
   {
     "id": 310,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3700,7 +3775,7 @@
   },
   {
     "id": 311,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3713,7 +3788,7 @@
   },
   {
     "id": 312,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3726,7 +3801,7 @@
   },
   {
     "id": 313,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3739,7 +3814,7 @@
   },
   {
     "id": 314,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3752,7 +3827,7 @@
   },
   {
     "id": 315,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3765,7 +3840,7 @@
   },
   {
     "id": 316,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3778,7 +3853,7 @@
   },
   {
     "id": 317,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3791,7 +3866,7 @@
   },
   {
     "id": 318,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3804,7 +3879,7 @@
   },
   {
     "id": 319,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3817,7 +3892,7 @@
   },
   {
     "id": 320,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3830,7 +3905,7 @@
   },
   {
     "id": 321,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3843,7 +3918,7 @@
   },
   {
     "id": 322,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3856,7 +3931,7 @@
   },
   {
     "id": 323,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3869,7 +3944,7 @@
   },
   {
     "id": 324,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3882,7 +3957,7 @@
   },
   {
     "id": 325,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3895,7 +3970,7 @@
   },
   {
     "id": 326,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3908,7 +3983,7 @@
   },
   {
     "id": 327,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3921,7 +3996,7 @@
   },
   {
     "id": 328,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3934,7 +4009,7 @@
   },
   {
     "id": 329,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3947,7 +4022,7 @@
   },
   {
     "id": 330,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3960,7 +4035,7 @@
   },
   {
     "id": 331,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3973,7 +4048,7 @@
   },
   {
     "id": 332,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -3986,7 +4061,7 @@
   },
   {
     "id": 333,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -3999,7 +4074,7 @@
   },
   {
     "id": 334,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4012,7 +4087,7 @@
   },
   {
     "id": 335,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4025,7 +4100,7 @@
   },
   {
     "id": 336,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4038,7 +4113,7 @@
   },
   {
     "id": 337,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4051,7 +4126,7 @@
   },
   {
     "id": 338,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4064,7 +4139,7 @@
   },
   {
     "id": 339,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4077,7 +4152,7 @@
   },
   {
     "id": 340,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4090,7 +4165,7 @@
   },
   {
     "id": 341,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4103,7 +4178,7 @@
   },
   {
     "id": 342,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4116,7 +4191,7 @@
   },
   {
     "id": 343,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4129,7 +4204,7 @@
   },
   {
     "id": 344,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4142,7 +4217,7 @@
   },
   {
     "id": 345,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4155,7 +4230,7 @@
   },
   {
     "id": 346,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4168,7 +4243,7 @@
   },
   {
     "id": 347,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4181,7 +4256,7 @@
   },
   {
     "id": 348,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4194,7 +4269,7 @@
   },
   {
     "id": 349,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4207,7 +4282,7 @@
   },
   {
     "id": 350,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4220,7 +4295,7 @@
   },
   {
     "id": 351,
-    "wpPostId": 16342,
+    "wpPostId": 16660,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
     "title": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4233,7 +4308,7 @@
   },
   {
     "id": 352,
-    "wpPostId": 15665,
+    "wpPostId": 15671,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
     "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
@@ -4246,6 +4321,940 @@
   },
   {
     "id": 353,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 354,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 355,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 356,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 357,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 358,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 359,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 360,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 361,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 362,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 363,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 364,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 365,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 366,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 367,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 368,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 369,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 370,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 371,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 372,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 373,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 374,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 375,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 376,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 377,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 378,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 379,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 380,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 381,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 382,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 383,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 384,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 385,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Milky Way best time",
+    "title": "Bromo Milky Way best time",
+    "topic": "",
+    "intent": "Informational",
+    "link": "",
+    "status": "belum_dibuat",
+    "publishedDate": null,
+    "scheduledDate": null
+  },
+  {
+    "id": 386,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 387,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 388,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 389,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 390,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 391,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 392,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 393,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 394,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 395,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 397,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 398,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 400,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 401,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 403,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 404,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 405,
+    "pageRole": "Cluster",
+    "keyphrase": "Which camera settings produce sharp Milky Way photographs at Mount Bromo?",
+    "title": "Mount Bromo astrophotography settings",
+    "topic": "",
+    "intent": "Informational",
+    "link": "",
+    "status": "belum_dibuat",
+    "scheduledDate": null,
+    "publishedDate": null
+  },
+  {
+    "id": 406,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 407,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 408,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 409,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 410,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 411,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 412,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 413,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 414,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 415,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 416,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 417,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 418,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 419,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 420,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 421,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 422,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 423,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 424,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 425,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 426,
+    "wpPostId": 16660,
+    "pageRole": "Cluster",
+    "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
+    "title": "Best Time to Visit Prambanan for Sunset & Photography",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/best-time-to-visit-prambanan/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-05-03",
+    "scheduledDate": null
+  },
+  {
+    "id": 427,
+    "wpPostId": 15671,
+    "pageRole": "Cluster",
+    "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "title": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
+    "topic": "",
+    "intent": "Informational",
+    "link": "https://panoramalenstrip.com/?p=15671",
+    "status": "draft",
+    "publishedDate": "2025-11-29",
+    "scheduledDate": null
+  },
+  {
+    "id": 428,
     "wpPostId": 16342,
     "pageRole": "Cluster",
     "keyphrase": "Best Time to Visit Prambanan for Sunset & Photography",
@@ -4258,7 +5267,7 @@
     "scheduledDate": null
   },
   {
-    "id": 354,
+    "id": 429,
     "wpPostId": 15665,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Hiking Routes: Ultimate Guide to Hiking Mount Bromo",
