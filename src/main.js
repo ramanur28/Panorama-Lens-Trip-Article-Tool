@@ -1090,33 +1090,123 @@ function addArticleImage(imgData = {}) {
   dom.articleImagesContainer.appendChild(div);
 }
 
-function addInternalLink(title = "", url = "", count = 1) {
+function addInternalLink(title = "", url = "", count = 1, isPillar = false) {
   if (!dom.internalLinksContainer) return;
   const div = document.createElement("div");
   div.className = "internal-link-item";
-  div.style.cssText = "display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;";
+  div.style.cssText = "background: var(--surface-2, #f8fafc); padding: 0.75rem 0.85rem; border-radius: 8px; border: 1px solid var(--border, #cbd5e1); margin-bottom: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);";
+
+  const badgeBg = (count >= 3 || isPillar) ? "#fef3c7" : "#dbeafe";
+  const badgeColor = (count >= 3 || isPillar) ? "#92400e" : "#1e40af";
+  const badgeBorder = (count >= 3 || isPillar) ? "#fde68a" : "#bfdbfe";
+  const badgeText = (count >= 3 || isPillar) ? `📌 Pillar (${count}x)` : `🔗 Cluster (${count}x)`;
+
   div.innerHTML = `
-    <input type="text" class="input link-title-input" placeholder="Anchor Title / Article Name" value="${escapeHtml(title)}" style="flex:2;">
-    <input type="url" class="input link-url-input" placeholder="Target URL (https://...)" value="${escapeHtml(url)}" style="flex:2;">
-    <input type="number" class="input link-count-input" value="${count}" min="1" max="5" style="width:70px;">
-    <button type="button" class="btn btn-icon btn-ghost text-danger btn-remove-row">✕</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px dashed var(--border, #e2e8f0);">
+      <span class="link-role-badge" style="font-size:0.75rem; font-weight:600; padding:0.2rem 0.55rem; background:${badgeBg}; color:${badgeColor}; border-radius:4px; border:1px solid ${badgeBorder};">
+        ${badgeText}
+      </span>
+      <button type="button" class="btn-remove-row" title="Remove link" style="background:none; border:none; color:var(--text-muted, #94a3b8); font-size:1.1rem; font-weight:bold; cursor:pointer; padding:0 0.3rem; line-height:1; transition:color 0.15s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-muted, #94a3b8)'">✕</button>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      <div>
+        <label style="font-size: 0.72rem; color: var(--text-secondary, #64748b); font-weight: 600; display: block; margin-bottom: 0.2rem;">Anchor Title / Keyword</label>
+        <input type="text" class="input link-title-input" placeholder="e.g. Mount Bromo Sunrise Viewpoints" value="${escapeHtml(title)}" style="width: 100%;">
+      </div>
+      <div>
+        <label style="font-size: 0.72rem; color: var(--text-secondary, #64748b); font-weight: 600; display: block; margin-bottom: 0.2rem;">Target URL</label>
+        <input type="url" class="input link-url-input" placeholder="https://panoramalenstrip.com/..." value="${escapeHtml(url)}" style="width: 100%;">
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.1rem;">
+        <label style="font-size: 0.72rem; color: var(--text-secondary, #64748b); font-weight: 600; margin-bottom: 0;">Repeat Count (Occurrences in Article)</label>
+        <input type="number" class="input link-count-input" value="${count}" min="1" max="5" style="width: 70px; text-align: center;">
+      </div>
+    </div>
   `;
   div.querySelector(".btn-remove-row").addEventListener("click", () => div.remove());
+
+  const countInput = div.querySelector(".link-count-input");
+  if (countInput) {
+    countInput.addEventListener("input", () => {
+      const val = parseInt(countInput.value, 10) || 1;
+      const badge = div.querySelector(".link-role-badge");
+      if (badge) {
+        if (val >= 3) {
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+          badge.style.borderColor = "#fde68a";
+          badge.textContent = `📌 Pillar (${val}x)`;
+        } else {
+          badge.style.background = "#dbeafe";
+          badge.style.color = "#1e40af";
+          badge.style.borderColor = "#bfdbfe";
+          badge.textContent = `🔗 Cluster (${val}x)`;
+        }
+      }
+    });
+  }
+
   dom.internalLinksContainer.appendChild(div);
 }
 
-function addInsertLinkRow(title = "", url = "", count = 1) {
+function addInsertLinkRow(title = "", url = "", count = 1, isPillar = false) {
   if (!dom.insertLinksListContainer) return;
   const div = document.createElement("div");
   div.className = "insert-link-item";
-  div.style.cssText = "display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;";
+  div.style.cssText = "background: var(--surface-2, #f8fafc); padding: 0.75rem 0.85rem; border-radius: 8px; border: 1px solid var(--border, #cbd5e1); margin-bottom: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);";
+
+  const badgeBg = (count >= 3 || isPillar) ? "#fef3c7" : "#dbeafe";
+  const badgeColor = (count >= 3 || isPillar) ? "#92400e" : "#1e40af";
+  const badgeBorder = (count >= 3 || isPillar) ? "#fde68a" : "#bfdbfe";
+  const badgeText = (count >= 3 || isPillar) ? `📌 Pillar (${count}x)` : `🔗 Cluster (${count}x)`;
+
   div.innerHTML = `
-    <input type="text" class="input insert-link-title-input" placeholder="Anchor Title to Insert" value="${escapeHtml(title)}" style="flex:2;">
-    <input type="url" class="input insert-link-url-input" placeholder="URL to Insert" value="${escapeHtml(url)}" style="flex:2;">
-    <input type="number" class="input insert-link-count-input" value="${count}" min="1" max="5" style="width:70px;">
-    <button type="button" class="btn btn-icon btn-ghost text-danger btn-remove-row">✕</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px dashed var(--border, #e2e8f0);">
+      <span class="link-role-badge" style="font-size:0.75rem; font-weight:600; padding:0.2rem 0.55rem; background:${badgeBg}; color:${badgeColor}; border-radius:4px; border:1px solid ${badgeBorder};">
+        ${badgeText}
+      </span>
+      <button type="button" class="btn-remove-row" title="Remove link" style="background:none; border:none; color:var(--text-muted, #94a3b8); font-size:1.1rem; font-weight:bold; cursor:pointer; padding:0 0.3rem; line-height:1; transition:color 0.15s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-muted, #94a3b8)'">✕</button>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      <div>
+        <label style="font-size: 0.72rem; color: var(--text-secondary, #64748b); font-weight: 600; display: block; margin-bottom: 0.2rem;">Anchor Title / Keyword</label>
+        <input type="text" class="input insert-link-title-input" placeholder="Anchor Title to Insert" value="${escapeHtml(title)}" style="width: 100%;">
+      </div>
+      <div>
+        <label style="font-size: 0.72rem; color: var(--text-secondary, #64748b); font-weight: 600; display: block; margin-bottom: 0.2rem;">Target URL</label>
+        <input type="url" class="input insert-link-url-input" placeholder="https://panoramalenstrip.com/..." value="${escapeHtml(url)}" style="width: 100%;">
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.1rem;">
+        <label style="font-size: 0.72rem; color: var(--text-secondary, #64748b); font-weight: 600; margin-bottom: 0;">Repeat Count (Occurrences in Article)</label>
+        <input type="number" class="input insert-link-count-input" value="${count}" min="1" max="5" style="width: 70px; text-align: center;">
+      </div>
+    </div>
   `;
   div.querySelector(".btn-remove-row").addEventListener("click", () => div.remove());
+
+  const countInput = div.querySelector(".insert-link-count-input");
+  if (countInput) {
+    countInput.addEventListener("input", () => {
+      const val = parseInt(countInput.value, 10) || 1;
+      const badge = div.querySelector(".link-role-badge");
+      if (badge) {
+        if (val >= 3) {
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+          badge.style.borderColor = "#fde68a";
+          badge.textContent = `📌 Pillar (${val}x)`;
+        } else {
+          badge.style.background = "#dbeafe";
+          badge.style.color = "#1e40af";
+          badge.style.borderColor = "#bfdbfe";
+          badge.textContent = `🔗 Cluster (${val}x)`;
+        }
+      }
+    });
+  }
+
   dom.insertLinksListContainer.appendChild(div);
 }
 
@@ -1144,6 +1234,127 @@ function autoInsertLinks() {
   });
 
   showToast(`Auto-filled ${addedUrls.size} related link(s).`, "success");
+}
+
+function getRelatedArticlesForCompose(item) {
+  if (!state.articles || state.articles.length === 0) return [];
+  
+  const related = [];
+  const addedUrls = new Set();
+
+  const getItemUrl = (art) => {
+    if (art.link && art.link.startsWith("http")) return art.link;
+    if (art.slug) return `https://panoramalenstrip.com/${art.slug.replace(/^\//, '')}/`;
+    const cleanStr = (art.keyphrase || art.title || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+    if (cleanStr) return `https://panoramalenstrip.com/${cleanStr}/`;
+    return "";
+  };
+
+  const itemIdx = state.articles.findIndex(a => String(a.id) === String(item.id));
+  const isCluster = /cluster|sub-page|child/i.test(item.pageRole || "");
+
+  // 1. If Cluster, find parent Pillar article (Repeated 3 to 5 times)
+  let pillarItem = null;
+  if (isCluster && itemIdx !== -1) {
+    for (let i = itemIdx - 1; i >= 0; i--) {
+      if (/pillar/i.test(state.articles[i].pageRole || "")) {
+        pillarItem = state.articles[i];
+        break;
+      }
+    }
+    if (!pillarItem) {
+      pillarItem = state.articles.find(a => /pillar/i.test(a.pageRole || "") && String(a.id) !== String(item.id));
+    }
+  }
+
+  if (pillarItem) {
+    const pillarUrl = getItemUrl(pillarItem);
+    if (pillarUrl && !addedUrls.has(pillarUrl)) {
+      addedUrls.add(pillarUrl);
+      related.push({
+        title: pillarItem.title || pillarItem.keyphrase || "Pillar Guide",
+        url: pillarUrl,
+        count: 4, // Repeated 3-5 times (default 4)
+        isPillar: true
+      });
+    }
+  }
+
+  // 2. Find Cluster Related Articles (Collect 3 to 5 cluster links)
+  if (itemIdx !== -1) {
+    let siloStart = 0;
+    let siloEnd = state.articles.length;
+
+    for (let i = itemIdx; i >= 0; i--) {
+      if (/pillar/i.test(state.articles[i].pageRole || "")) {
+        siloStart = i;
+        break;
+      }
+    }
+
+    for (let i = itemIdx + 1; i < state.articles.length; i++) {
+      if (/pillar/i.test(state.articles[i].pageRole || "")) {
+        siloEnd = i;
+        break;
+      }
+    }
+
+    const siloArticles = state.articles.slice(siloStart, siloEnd);
+    for (const art of siloArticles) {
+      if (String(art.id) === String(item.id)) continue;
+      if (pillarItem && String(art.id) === String(pillarItem.id)) continue;
+
+      const url = getItemUrl(art);
+      if (url && !addedUrls.has(url)) {
+        addedUrls.add(url);
+        related.push({
+          title: art.title || art.keyphrase || "Related Article",
+          url: url,
+          count: 1,
+          isPillar: false
+        });
+        const clusterCount = related.filter(r => !r.isPillar).length;
+        if (clusterCount >= 4) break; // Collect up to 4 cluster links (3-5 range)
+      }
+    }
+  }
+
+  // 3. Keyword matching fallback to ensure 3 to 5 cluster links
+  const currentClusters = related.filter(r => !r.isPillar).length;
+  if (currentClusters < 3) {
+    const itemWords = ((item.title || "") + " " + (item.keyphrase || ""))
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(w => w.length > 3 && !['guide', 'best', '2026', 'tour', 'what', 'with', 'from', 'your', 'about'].includes(w));
+
+    for (const art of state.articles) {
+      if (String(art.id) === String(item.id)) continue;
+      if (pillarItem && String(art.id) === String(pillarItem.id)) continue;
+
+      const url = getItemUrl(art);
+      if (!url || addedUrls.has(url)) continue;
+
+      const artText = ((art.title || "") + " " + (art.keyphrase || "")).toLowerCase();
+      const hasMatch = itemWords.some(w => artText.includes(w));
+      if (hasMatch) {
+        addedUrls.add(url);
+        related.push({
+          title: art.title || art.keyphrase || "Related Article",
+          url: url,
+          count: 1,
+          isPillar: false
+        });
+        const countClusters = related.filter(r => !r.isPillar).length;
+        if (countClusters >= 4) break;
+      }
+    }
+  }
+
+  return related;
 }
 
 async function saveAdminSettingsFromForm() {
@@ -1782,6 +1993,25 @@ function composeArticleFromItem(item) {
       item.images.forEach(img => addArticleImage(img));
     } else {
       addArticleImage();
+    }
+  }
+
+  // --- Auto Insert Related Article Backlinks ---
+  if (dom.internalLinksContainer) {
+    dom.internalLinksContainer.innerHTML = "";
+    if (item.internalLinks && Array.isArray(item.internalLinks) && item.internalLinks.length > 0) {
+      item.internalLinks.forEach(link => {
+        addInternalLink(link.title || link.name || "", link.url || link.link || "", link.count || 1, link.isPillar || false);
+      });
+    } else if (existingQueue && existingQueue.internalLinks && Array.isArray(existingQueue.internalLinks) && existingQueue.internalLinks.length > 0) {
+      existingQueue.internalLinks.forEach(link => {
+        addInternalLink(link.title || link.name || "", link.url || link.link || "", link.count || 1, link.isPillar || false);
+      });
+    } else {
+      const autoLinks = getRelatedArticlesForCompose(item);
+      autoLinks.forEach(rel => {
+        addInternalLink(rel.title, rel.url, rel.count || 1, rel.isPillar || false);
+      });
     }
   }
 
@@ -2570,10 +2800,13 @@ function countKeyphraseOccurrences(text, keyphrase) {
 }
 
 function escapeHtml(text) {
-  if (!text) return "";
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+  if (text === null || text === undefined) return "";
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function escapeRegExp(string) {

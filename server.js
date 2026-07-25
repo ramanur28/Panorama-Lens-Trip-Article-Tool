@@ -126,7 +126,11 @@ function getAdminSettings() {
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
       const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
-      return JSON.parse(data);
+    const settings = JSON.parse(data);
+      if (!settings.ctaLink) {
+        settings.ctaLink = 'https://wa.me/+6282132838229?text=Hello+Panorama+Lens+Trip%21';
+      }
+      return settings;
     }
   } catch (e) {
     console.error('Failed to read admin settings:', e);
@@ -140,7 +144,7 @@ function getAdminSettings() {
     wordCountDivisor: 10,
     targetWordCount: 3000,
     targetLanguage: 'English',
-    ctaLink: ''
+    ctaLink: 'https://wa.me/+6282132838229?text=Hello+Panorama+Lens+Trip%21'
   };
 }
 
@@ -244,7 +248,7 @@ app.post(['/api/upload', '/api/upload-image'], (req, res) => {
 });
 
 // ── Admin Endpoints ───────────────────────────────────────────────
-app.get('/api/settings', (req, res) => {
+app.get(['/api/settings', '/api/admin/settings'], (req, res) => {
   res.json(getAdminSettings());
 });
 
@@ -351,13 +355,47 @@ app.post('/api/admin/settings', async (req, res) => {
   }
 });
 
+// Helper to deduplicate article manager items
+function deduplicateManagerItems(items) {
+  if (!Array.isArray(items)) return [];
+  const seenIds = new Set();
+  const seenWpIds = new Set();
+  const seenLinks = new Set();
+  const seenTitleKp = new Set();
+
+  const result = [];
+  for (const item of items) {
+    if (!item) continue;
+
+    if (item.id && seenIds.has(item.id)) continue;
+    if (item.wpPostId && seenWpIds.has(String(item.wpPostId))) continue;
+
+    const cleanLink = item.link ? item.link.trim().toLowerCase().replace(/\/$/, '') : '';
+    if (cleanLink && seenLinks.has(cleanLink)) continue;
+
+    const titleNorm = (item.title || '').trim().toLowerCase();
+    const kpNorm = (item.keyphrase || '').trim().toLowerCase();
+    const tkKey = `${titleNorm}|||${kpNorm}`;
+    if (titleNorm && seenTitleKp.has(tkKey)) continue;
+
+    if (item.id) seenIds.add(item.id);
+    if (item.wpPostId) seenWpIds.add(String(item.wpPostId));
+    if (cleanLink) seenLinks.add(cleanLink);
+    if (titleNorm) seenTitleKp.add(tkKey);
+
+    result.push(item);
+  }
+  return result;
+}
+
 // Helper to read article manager items
 function getManagerItems() {
   try {
     if (fs.existsSync(MANAGER_FILE)) {
       const data = fs.readFileSync(MANAGER_FILE, 'utf8');
-      const items = JSON.parse(data);
-      let changed = false;
+      const rawItems = JSON.parse(data);
+      const items = deduplicateManagerItems(rawItems);
+      let changed = (items.length !== rawItems.length);
       items.forEach(item => {
         if (item.article && item.article.includes('## ##')) {
           item.article = item.article.replace(/##\s*##\s*/g, '## ');
@@ -381,7 +419,8 @@ function saveManagerItems(items) {
     if (!fs.existsSync(SETTINGS_DIR)) {
       fs.mkdirSync(SETTINGS_DIR, { recursive: true });
     }
-    fs.writeFileSync(MANAGER_FILE, JSON.stringify(items, null, 2), 'utf8');
+    const cleanItems = deduplicateManagerItems(items);
+    fs.writeFileSync(MANAGER_FILE, JSON.stringify(cleanItems, null, 2), 'utf8');
     return true;
   } catch (e) {
     console.error('Failed to save manager items:', e);
@@ -658,7 +697,7 @@ async function syncWordPressArticles() {
       if (changed) updatedCount++;
     } else {
       // Post was not found in WordPress posts (e.g. deleted or trashed on WordPress)
-      if (article.status === 'telah_dibuat' || article.status === 'dijadwalkan' || article.wpPostId || (article.link && article.link.includes('panoramalenstrip.com'))) {
+      if (wpPosts.length > 0 && (article.status === 'telah_dibuat' || article.status === 'dijadwalkan' || article.wpPostId || (article.link && article.link.includes('panoramalenstrip.com')))) {
         article.status = 'belum_dibuat';
         article.publishedDate = null;
         article.scheduledDate = null;
@@ -679,40 +718,7 @@ async function syncWordPressArticles() {
     }
   }
 
-  // Also import unmatched WordPress posts (published or scheduled) so user can track them directly
-  for (const p of wpPosts) {
-    if (matchedWpIds.has(p.id)) continue;
-    
-    const rawTitle = p.title?.rendered || '';
-    const cleanTitle = decodeWpHtmlEntities(rawTitle).trim();
-    if (!cleanTitle) continue;
-
-    let targetStatus = 'telah_dibuat';
-    if (p.status === 'future') targetStatus = 'dijadwalkan';
-    else if (p.status === 'draft' || p.status === 'pending') targetStatus = 'draft';
-
-    const dateStr = p.date ? p.date.split('T')[0] : todayStr;
-    const nextId = articles.length > 0 ? Math.max(...articles.map(a => a.id)) + 1 : 1;
-
-    articles.push({
-      id: nextId,
-      wpPostId: p.id,
-      pageRole: 'Cluster',
-      keyphrase: cleanTitle,
-      title: cleanTitle,
-      topic: '',
-      intent: 'Informational',
-      link: p.link || '',
-      status: targetStatus,
-      publishedDate: targetStatus === 'telah_dibuat' ? dateStr : null,
-      scheduledDate: targetStatus === 'dijadwalkan' ? dateStr : null
-    });
-    
-    matchedWpIds.add(p.id);
-    addedCount++;
-  }
-  
-  if (updatedCount > 0 || addedCount > 0 || purgedCount > 0) {
+  if (updatedCount > 0 || purgedCount > 0) {
     saveManagerItems(articles);
   }
 
@@ -2083,7 +2089,7 @@ app.post('/api/generate', async (req, res) => {
   const finalCustomPrompt = customPrompt || adminSettings.customPrompt || '';
   const finalTargetAudience = targetAudience || adminSettings.targetAudience || '';
   const finalBrand = brand || adminSettings.brand || '';
-  const finalCtaLink = adminSettings.ctaLink || '';
+  const finalCtaLink = adminSettings.ctaLink || 'https://wa.me/+6282132838229?text=Hello+Panorama+Lens+Trip%21';
   const wordCountMode = adminSettings.wordCountMode || 'total';
   const wordCountDivisor = adminSettings.wordCountDivisor || 10;
   const rawTarget = adminSettings.targetWordCount || 3000;
@@ -2664,7 +2670,7 @@ app.post('/api/update-section', async (req, res) => {
   const finalCustomPrompt = customPrompt || adminSettings.customPrompt || '';
   const finalTargetAudience = targetAudience || adminSettings.targetAudience || '';
   const finalBrand = brand || adminSettings.brand || '';
-  const finalCtaLink = adminSettings.ctaLink || '';
+  const finalCtaLink = adminSettings.ctaLink || 'https://wa.me/+6282132838229?text=Hello+Panorama+Lens+Trip%21';
   const wordCountMode = adminSettings.wordCountMode || 'total';
   const wordCountDivisor = adminSettings.wordCountDivisor || 10;
   const rawTarget = adminSettings.targetWordCount || 3000;
