@@ -653,13 +653,13 @@ function getFormData() {
       scene: dom.imageSceneInput ? dom.imageSceneInput.value.trim() : "",
     };
   } else if (state.currentMode === "insert-link") {
-    const targetItem = insertLinkTargetId ? (state.queue.find(q => String(q.id) === String(insertLinkTargetId)) || (state.articles ? state.articles.find(a => String(a.id) === String(insertLinkTargetId)) : null)) : null;
+    const targetItem = insertLinkTargetId ? findArticleById(insertLinkTargetId) : null;
     return {
       ...common,
       mode: "insert-link",
       title: targetItem ? `Insert Links into: ${targetItem.title || targetItem.keyphrase}` : "Insert Internal Links",
       insertLinkTargetId: insertLinkTargetId || undefined,
-      articleText: targetItem ? (targetItem.article || "") : "",
+      articleText: targetItem ? (targetItem.article || targetItem.content || "") : "",
       links: insertLinks,
     };
   }
@@ -893,28 +893,38 @@ function selectQueueItem(id) {
   renderPreview();
 }
 
+function findArticleById(id) {
+  if (id === undefined || id === null || id === "") return null;
+  const strId = String(id);
+  const fromQueue = (state.queue || []).find(q => String(q.id) === strId);
+  if (fromQueue) return fromQueue;
+  return (state.articles || []).find(a => String(a.id) === strId) || null;
+}
+
 function populateInsertLinkTargetSelect() {
   const selectEl = dom.insertLinkTargetSelect;
   if (!selectEl) return;
   const currentVal = selectEl.value;
   selectEl.innerHTML = '<option value="">-- Choose Completed Article to Edit --</option>';
 
-  const allArticles = [
-    ...state.queue.filter(item => item.status === "complete" || item.article),
-    ...(state.articles ? state.articles.filter(a => a.article || a.link) : [])
-  ];
+  const queueArticles = (state.queue || []).filter(item => item.status === "complete" || (item.article && item.article.trim().length > 0) || (item.content && item.content.trim().length > 0));
+  const managerArticles = (state.articles || []).filter(item => item.status === "telah_dibuat" || item.status === "complete" || (item.article && item.article.trim().length > 0) || (item.content && item.content.trim().length > 0));
+
+  const allArticles = [...queueArticles, ...managerArticles];
 
   const seenIds = new Set();
   allArticles.forEach(item => {
-    if (!item.id || seenIds.has(item.id)) return;
-    seenIds.add(item.id);
+    if (!item || item.id === undefined || item.id === null) return;
+    const strId = String(item.id);
+    if (seenIds.has(strId)) return;
+    seenIds.add(strId);
     const option = document.createElement("option");
     option.value = item.id;
     option.textContent = item.title || item.keyphrase || `Article #${item.id}`;
     selectEl.appendChild(option);
   });
 
-  if (currentVal && Array.from(selectEl.options).some(opt => opt.value === currentVal)) {
+  if (currentVal && Array.from(selectEl.options).some(opt => String(opt.value) === String(currentVal))) {
     selectEl.value = currentVal;
   }
 }
@@ -968,7 +978,7 @@ function renderQueue() {
         <span class="queue-item-status status-${item.status}">${item.status === "complete" ? "✅" : item.status}</span>
       </div>
       <div class="queue-item-meta">
-        <span>${item.mode === "compose" ? "📝 Compose" : "🔄 Update"}</span>
+        <span>${item.mode === "compose" ? "📝 Compose" : item.mode === "update" ? "🔄 Update" : item.mode === "image-seo" ? "🖼️ Image SEO" : item.mode === "insert-link" ? "🔗 Insert Link" : "📝 Mode"}</span>
         ${item.keyphrase ? `<span>🔑 ${escapeHtml(item.keyphrase)}</span>` : ""}
       </div>
       ${item.status === "generating" ? `
@@ -1213,10 +1223,18 @@ function addInsertLinkRow(title = "", url = "", count = 1, isPillar = false) {
 function autoInsertLinks() {
   if (!dom.insertLinksListContainer) return;
   const targetId = dom.insertLinkTargetSelect ? dom.insertLinkTargetSelect.value : "";
-  const availableArticles = [
-    ...state.queue.filter(i => (i.status === "complete" || i.article) && String(i.id) !== String(targetId)),
-    ...(state.articles ? state.articles.filter(a => String(a.id) !== String(targetId)) : [])
-  ];
+  const queueArticles = (state.queue || []).filter(i => (i.status === "complete" || (i.article && i.article.trim().length > 0) || (i.content && i.content.trim().length > 0)) && String(i.id) !== String(targetId));
+  const managerArticles = (state.articles || []).filter(i => (i.status === "telah_dibuat" || i.status === "complete" || (i.article && i.article.trim().length > 0) || (i.content && i.content.trim().length > 0)) && String(i.id) !== String(targetId));
+
+  const allAvailable = [...queueArticles, ...managerArticles];
+  const seenIds = new Set();
+  const availableArticles = allAvailable.filter(art => {
+    if (!art || art.id === undefined || art.id === null) return false;
+    const strId = String(art.id);
+    if (seenIds.has(strId)) return false;
+    seenIds.add(strId);
+    return true;
+  });
 
   if (availableArticles.length === 0) {
     showToast("No related articles found to auto-fill.", "info");
@@ -1225,9 +1243,25 @@ function autoInsertLinks() {
 
   dom.insertLinksListContainer.innerHTML = "";
   const addedUrls = new Set();
-  availableArticles.slice(0, 4).forEach(art => {
+  availableArticles.slice(0, 5).forEach(art => {
     const title = art.title || art.keyphrase || "Related Guide";
-    const url = art.link || (art.slug ? `https://panoramalenstrip.com/${art.slug}/` : `https://panoramalenstrip.com/article-${art.id}/`);
+    let url = art.link || art.wpUrl || "";
+    if (!url) {
+      const artText = art.article || art.content || "";
+      const seo = parseArticleSeoFromMarkdown(artText, art);
+      if (seo.urlSlug) {
+        url = `https://panoramalenstrip.com/${seo.urlSlug.replace(/^\/+|\/+$/g, '')}/`;
+      } else if (art.slug) {
+        url = `https://panoramalenstrip.com/${art.slug.replace(/^\/+|\/+$/g, '')}/`;
+      } else {
+        const cleanStr = (art.keyphrase || art.title || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .trim()
+          .replace(/\s+/g, '-');
+        url = cleanStr ? `https://panoramalenstrip.com/${cleanStr}/` : `https://panoramalenstrip.com/article-${art.id}/`;
+      }
+    }
     if (addedUrls.has(url)) return;
     addedUrls.add(url);
     addInsertLinkRow(title, url, 1);
@@ -1527,9 +1561,10 @@ async function generateArticle(item) {
       };
     } else if (item.mode === "insert-link") {
       endpoint = apiPath("/api/insert-link");
+      const targetItem = item.insertLinkTargetId ? findArticleById(item.insertLinkTargetId) : null;
       bodyData = {
         ...bodyData,
-        articleText: item.articleText,
+        articleText: item.articleText || (targetItem ? (targetItem.article || targetItem.content || "") : ""),
         links: item.links,
       };
     }
@@ -1587,8 +1622,9 @@ async function generateArticle(item) {
 function handleSSEEvent(item, data) {
   switch (data.type) {
     case "status":
+    case "progress":
       item.status = "generating";
-      item.progress = data.progress || item.progress;
+      item.progress = data.progress || data.percent || item.progress;
       item.progressMessage = data.message || item.progressMessage;
       break;
     case "delta":
@@ -1608,6 +1644,23 @@ function handleSSEEvent(item, data) {
       if (data.article) item.article = data.article;
       if (data.images && Array.isArray(data.images)) item.images = data.images;
       item.wordCount = countWords(item.article);
+
+      if (item.mode === "insert-link" && item.insertLinkTargetId) {
+        const targetItem = findArticleById(item.insertLinkTargetId);
+        if (targetItem) {
+          targetItem.article = item.article;
+          targetItem.wordCount = item.wordCount;
+        }
+        const mgrItem = (state.articles || []).find(a => String(a.id) === String(item.insertLinkTargetId));
+        if (mgrItem) {
+          mgrItem.article = item.article;
+          mgrItem.wordCount = item.wordCount;
+          if (typeof saveArticleItem === "function") {
+            saveArticleItem(mgrItem);
+          }
+        }
+      }
+
       showToast(`Successfully generated "${item.title}"!`, "success");
       break;
     case "error":
@@ -1853,6 +1906,7 @@ function updateManagerBadges() {
 
 function renderArticles() {
   updateManagerBadges();
+  populateInsertLinkTargetSelect();
 
   const container = dom.articlesTableBody;
   if (!container) return;

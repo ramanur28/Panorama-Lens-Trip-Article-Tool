@@ -1434,9 +1434,9 @@
     "title": "Bromo Milky Way Photography Tour: Complete Guide",
     "topic": "What happens on a Bromo Milky Way photography tour, and what should be included?",
     "intent": "Commercial Investigation + Transactional",
-    "link": "",
-    "status": "belum_dibuat",
-    "publishedDate": null,
+    "link": "https://panoramalenstrip.com/what-happens-bromo-milky-way-photography-tour/",
+    "status": "telah_dibuat",
+    "publishedDate": "2026-07-27 09:00",
     "scheduledDate": null
   },
   {
@@ -1693,5 +1693,17 @@
     "status": "telah_dibuat",
     "publishedDate": "2026-01-19",
     "scheduledDate": null
+  },
+  {
+    "id": 152,
+    "pageRole": "Cluster",
+    "keyphrase": "What happens on a Bromo Milky Way photography tour, and what should be included?",
+    "title": "Bromo Milky Way photography tour",
+    "topic": "",
+    "intent": "Informational",
+    "link": "",
+    "status": "belum_dibuat",
+    "scheduledDate": null,
+    "publishedDate": null
   }
 ]
