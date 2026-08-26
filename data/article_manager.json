@@ -1403,18 +1403,6 @@
     "status": "belum_dibuat"
   },
   {
-    "id": 128,
-    "pageRole": "Pillar",
-    "keyphrase": "Bromo Milky Way",
-    "title": "Bromo Milky Way Photography Guide and Private Tours",
-    "topic": "What is Bromo Milky Way, and how do you plan a successful photography trip?",
-    "intent": "Informational + Commercial Investigation",
-    "link": "https://panoramalenstrip.com/what-is-bromo-milky-way-photo-trip/",
-    "status": "telah_dibuat",
-    "publishedDate": "2026-07-18",
-    "wpPostId": 17074
-  },
-  {
     "id": 129,
     "pageRole": "Cluster",
     "keyphrase": "Bromo Milky Way best time",

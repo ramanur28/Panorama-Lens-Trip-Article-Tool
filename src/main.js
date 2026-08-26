@@ -28,6 +28,38 @@ function normalizeImageUrl(url) {
   return `${BASE_PATH}${clean}`;
 }
 
+// ── Authenticated API Fetch Helper ────────────────────────────────
+async function authFetch(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  const token = state.token || localStorage.getItem("af-auth-token") || "";
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", "Bearer " + token);
+  }
+
+  const newOptions = {
+    ...options,
+    headers
+  };
+
+  try {
+    const res = await fetch(url, newOptions);
+    if (res.status === 401) {
+      if (state.isAuthenticated) {
+        state.isAuthenticated = false;
+        state.user = null;
+        state.isAdmin = false;
+        state.token = "";
+        localStorage.removeItem("af-auth-token");
+        showAuthGateway("Session expired. Please sign in again.");
+      }
+    }
+    return res;
+  } catch (err) {
+    throw err;
+  }
+}
+
+
 // ── State ────────────────────────────────────────────────────────
 const state = {
   apiKey: localStorage.getItem("af-api-key") || "",
@@ -46,7 +78,10 @@ const state = {
   managerFilter: "all",
   managerSearch: "",
   currentCalendarDate: new Date(),
-  isAdmin: false, // Default to non-admin until authenticated
+  token: localStorage.getItem("af-auth-token") || "",
+  user: null,
+  isAuthenticated: false,
+  isAdmin: false,
   editingArticleItem: null
 };
 
@@ -77,12 +112,25 @@ function initDom() {
   dom.apiStatus = $("#apiStatus");
   dom.themeToggleBtn = $("#themeToggleBtn");
 
-  // Admin Login Elements
-  dom.adminLoginHeaderBtn = $("#adminLoginHeaderBtn");
-  dom.adminLoginModal = $("#adminLoginModal");
-  dom.closeAdminLogin = $("#closeAdminLogin");
-  dom.adminPasswordInput = $("#adminPasswordInput");
-  dom.submitAdminLogin = $("#submitAdminLogin");
+  // Auth Gateway & Header Profile Elements
+  dom.authGateway = $("#authGateway");
+  dom.appContainer = $("#appContainer");
+  dom.authForm = $("#authForm");
+  dom.authUsernameInput = $("#authUsernameInput");
+  dom.authPasswordInput = $("#authPasswordInput");
+  dom.toggleAuthPasswordVisibility = $("#toggleAuthPasswordVisibility");
+  dom.authSubmitBtn = $("#authSubmitBtn");
+  dom.authBtnSpinner = $("#authBtnSpinner");
+  dom.authBtnText = $("#authBtnText");
+  dom.authAlert = $("#authAlert");
+  dom.authThemeToggle = $("#authThemeToggle");
+  dom.quickLoginAdmin = $("#quickLoginAdmin");
+  dom.quickLoginUser = $("#quickLoginUser");
+  dom.userProfileBadge = $("#userProfileBadge");
+  dom.userAvatar = $("#userAvatar");
+  dom.userHeaderName = $("#userHeaderName");
+  dom.userRoleTag = $("#userRoleTag");
+  dom.logoutBtn = $("#logoutBtn");
 
   // Views & Navigation
   dom.btnShowWriter = $("#btnShowWriter");
@@ -241,17 +289,33 @@ function initDom() {
   dom.toastContainer = $("#toastContainer");
 }
 
-// ── Admin UI & Session Management ────────────────────────────────
+// ── Admin & Auth UI Management ────────────────────────────────────
 function updateAdminUI() {
-  if (dom.adminLoginHeaderBtn) {
-    dom.adminLoginHeaderBtn.textContent = state.isAdmin ? "🔓 Logout (Admin)" : "🔒 Admin Login";
-    dom.adminLoginHeaderBtn.className = state.isAdmin ? "btn btn-sm btn-ghost text-warning" : "btn btn-sm btn-secondary";
+  if (dom.userProfileBadge) {
+    dom.userProfileBadge.style.display = state.isAuthenticated ? "flex" : "none";
+  }
+  if (dom.logoutBtn) {
+    dom.logoutBtn.style.display = state.isAuthenticated ? "inline-flex" : "none";
+  }
+  if (dom.userAvatar) {
+    dom.userAvatar.textContent = state.isAdmin ? "👑" : "👤";
+  }
+  if (dom.userHeaderName) {
+    dom.userHeaderName.textContent = state.user?.username || (state.isAdmin ? "admin" : "user");
+  }
+  if (dom.userRoleTag) {
+    dom.userRoleTag.textContent = state.isAdmin ? "Admin" : "User";
+    dom.userRoleTag.className = state.isAdmin ? "user-role-tag" : "user-role-tag role-user";
   }
 
   const adminOnlySections = document.querySelectorAll(".admin-only-section");
   adminOnlySections.forEach(el => {
-    el.style.display = state.isAdmin ? "block" : "none";
+    el.style.display = state.isAdmin ? (el.tagName === "BUTTON" ? "inline-flex" : "block") : "none";
   });
+
+  if (dom.openSettings) {
+    dom.openSettings.style.display = state.isAdmin ? "inline-flex" : "none";
+  }
 
   const adminActions = $("#adminActionsContainer");
   if (adminActions) {
@@ -262,88 +326,152 @@ function updateAdminUI() {
   renderArticles();
 }
 
-async function checkAdminSession() {
-  const token = localStorage.getItem("af-admin-token");
-  if (!token) {
-    state.isAdmin = false;
-    updateAdminUI();
-    return;
-  }
-
-  try {
-    const res = await fetch(apiPath("/api/admin/check-session"), {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      state.isAdmin = !!data.loggedIn;
+function showAuthGateway(errorMessage = "") {
+  if (dom.authGateway) dom.authGateway.style.display = "flex";
+  if (dom.appContainer) dom.appContainer.style.display = "none";
+  if (dom.authAlert) {
+    if (errorMessage) {
+      dom.authAlert.textContent = errorMessage;
+      dom.authAlert.style.display = "block";
     } else {
-      state.isAdmin = false;
-      localStorage.removeItem("af-admin-token");
+      dom.authAlert.style.display = "none";
     }
-  } catch (err) {
-    state.isAdmin = false;
   }
+}
+
+function showApp() {
+  if (dom.authGateway) dom.authGateway.style.display = "none";
+  if (dom.appContainer) dom.appContainer.style.display = "flex";
   updateAdminUI();
 }
 
-function openAdminLoginModal() {
-  if (!dom.adminLoginModal) return;
-  if (dom.adminPasswordInput) dom.adminPasswordInput.value = "";
-  dom.adminLoginModal.classList.add("active");
-  setTimeout(() => {
-    if (dom.adminPasswordInput) dom.adminPasswordInput.focus();
-  }, 100);
-}
-
-function closeAdminLoginModal() {
-  if (dom.adminLoginModal) dom.adminLoginModal.classList.remove("active");
-}
-
-async function handleAdminLogin() {
-  const password = dom.adminPasswordInput ? dom.adminPasswordInput.value : "";
-  if (!password) {
-    showToast("Please enter the admin password.", "error");
+async function checkAuthSession() {
+  const token = state.token || localStorage.getItem("af-auth-token");
+  if (!token) {
+    state.isAuthenticated = false;
+    state.user = null;
+    state.isAdmin = false;
+    showAuthGateway();
     return;
   }
 
   try {
-    const res = await fetch(apiPath("/api/admin/login"), {
+    const res = await fetch(apiPath("/api/auth/me"), {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        state.isAuthenticated = true;
+        state.user = data.user;
+        state.isAdmin = data.user.role === "admin";
+        showApp();
+        loadGlobalSettings();
+        loadQueue();
+        loadArticles();
+        return;
+      }
+    }
+  } catch (err) {
+    console.error("Auth check failed:", err);
+  }
+
+  state.isAuthenticated = false;
+  state.user = null;
+  state.isAdmin = false;
+  state.token = "";
+  localStorage.removeItem("af-auth-token");
+  showAuthGateway();
+}
+
+async function handleLogin(e) {
+  if (e) e.preventDefault();
+
+  const username = dom.authUsernameInput ? dom.authUsernameInput.value.trim() : "";
+  const password = dom.authPasswordInput ? dom.authPasswordInput.value : "";
+
+  if (!username || !password) {
+    showAuthError("Please enter both username and password.");
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const res = await fetch(apiPath("/api/auth/login"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password })
+      body: JSON.stringify({ username, password })
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem("af-admin-token", data.token);
-        state.isAdmin = true;
-        closeAdminLoginModal();
-        updateAdminUI();
-        showToast("Successfully logged in as Admin!", "success");
-      }
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.token) {
+      state.token = data.token;
+      state.user = data.user;
+      state.isAdmin = data.user.role === "admin";
+      state.isAuthenticated = true;
+      localStorage.setItem("af-auth-token", data.token);
+
+      showApp();
+      loadGlobalSettings();
+      loadQueue();
+      loadArticles();
+
+      showToast("Welcome back, " + (data.user.name || data.user.username) + "!", "success");
     } else {
-      showToast("Invalid admin password.", "error");
+      showAuthError(data.error || "Invalid username or password.");
     }
   } catch (err) {
-    showToast("Login request failed.", "error");
+    showAuthError("Unable to connect to server. Please check your connection.");
+  } finally {
+    setAuthLoading(false);
   }
 }
 
-async function handleAdminLogout() {
-  const token = localStorage.getItem("af-admin-token");
-  try {
-    await fetch(apiPath("/api/admin/logout"), {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-  } catch (e) {}
+function showAuthError(msg) {
+  if (!dom.authAlert) return;
+  dom.authAlert.textContent = msg;
+  dom.authAlert.style.display = "block";
+  dom.authAlert.classList.remove("shake");
+  void dom.authAlert.offsetWidth; // trigger reflow
+  dom.authAlert.classList.add("shake");
+}
 
-  localStorage.removeItem("af-admin-token");
+function setAuthLoading(loading) {
+  if (dom.authSubmitBtn) dom.authSubmitBtn.disabled = loading;
+  if (dom.authBtnSpinner) dom.authBtnSpinner.style.display = loading ? "inline-block" : "none";
+  if (dom.authBtnText) dom.authBtnText.textContent = loading ? "Signing In..." : "Sign In to Workspace";
+}
+
+async function handleLogout() {
+  const token = state.token || localStorage.getItem("af-auth-token");
+  if (token) {
+    try {
+      await fetch(apiPath("/api/auth/logout"), {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token }
+      });
+    } catch (e) {}
+  }
+
+  state.token = "";
+  state.user = null;
   state.isAdmin = false;
-  updateAdminUI();
-  showToast("Logged out of Admin mode.", "info");
+  state.isAuthenticated = false;
+  localStorage.removeItem("af-auth-token");
+
+  if (dom.authUsernameInput) dom.authUsernameInput.value = "";
+  if (dom.authPasswordInput) dom.authPasswordInput.value = "";
+  if (dom.authAlert) dom.authAlert.style.display = "none";
+
+  showAuthGateway();
+  showToast("Logged out successfully.", "info");
+}
+
+function toggleAuthPasswordVisibility() {
+  if (!dom.authPasswordInput) return;
+  dom.authPasswordInput.type = dom.authPasswordInput.type === "password" ? "text" : "password";
 }
 
 // ── View Management ──────────────────────────────────────────────
@@ -376,8 +504,7 @@ function init() {
   
   updateApiStatus();
   applyTheme();
-  loadGlobalSettings();
-  checkAdminSession();
+  checkAuthSession();
 
   // Settings modal handlers
   if (dom.openSettings) dom.openSettings.addEventListener("click", () => openModal());
@@ -392,23 +519,24 @@ function init() {
   if (dom.toggleOpenaiKeyVisibility) dom.toggleOpenaiKeyVisibility.addEventListener("click", toggleOpenaiKeyVisibility);
   if (dom.themeToggleBtn) dom.themeToggleBtn.addEventListener("click", toggleTheme);
 
-  // Admin Login handlers
-  if (dom.adminLoginHeaderBtn) {
-    dom.adminLoginHeaderBtn.addEventListener("click", () => {
-      if (state.isAdmin) handleAdminLogout();
-      else openAdminLoginModal();
+  // Auth Gateway & Header Profile handlers
+  if (dom.authForm) dom.authForm.addEventListener("submit", handleLogin);
+  if (dom.logoutBtn) dom.logoutBtn.addEventListener("click", handleLogout);
+  if (dom.toggleAuthPasswordVisibility) dom.toggleAuthPasswordVisibility.addEventListener("click", toggleAuthPasswordVisibility);
+  if (dom.authThemeToggle) dom.authThemeToggle.addEventListener("click", toggleTheme);
+
+  if (dom.quickLoginAdmin) {
+    dom.quickLoginAdmin.addEventListener("click", () => {
+      if (dom.authUsernameInput) dom.authUsernameInput.value = "admin";
+      if (dom.authPasswordInput) dom.authPasswordInput.value = "admin123";
+      handleLogin();
     });
   }
-  if (dom.closeAdminLogin) dom.closeAdminLogin.addEventListener("click", closeAdminLoginModal);
-  if (dom.submitAdminLogin) dom.submitAdminLogin.addEventListener("click", handleAdminLogin);
-  if (dom.adminPasswordInput) {
-    dom.adminPasswordInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") handleAdminLogin();
-    });
-  }
-  if (dom.adminLoginModal) {
-    dom.adminLoginModal.addEventListener("click", (e) => {
-      if (e.target === dom.adminLoginModal) closeAdminLoginModal();
+  if (dom.quickLoginUser) {
+    dom.quickLoginUser.addEventListener("click", () => {
+      if (dom.authUsernameInput) dom.authUsernameInput.value = "user";
+      if (dom.authPasswordInput) dom.authPasswordInput.value = "user123";
+      handleLogin();
     });
   }
 
@@ -533,9 +661,7 @@ function init() {
   loadQueue();
   loadArticles();
 
-  if (!state.apiKey) {
-    setTimeout(() => openModal(), 500);
-  }
+
 }
 // ── Form Mode Switcher ───────────────────────────────────────────
 function switchMode(mode) {
@@ -666,11 +792,6 @@ function getFormData() {
 }
 
 function validateForm() {
-  if (!state.apiKey && !state.openaiApiKey) {
-    showToast("Please set your Gemini or OpenAI API key in Settings first.", "error");
-    openModal();
-    return null;
-  }
   const data = getFormData();
   if (!data) return null;
 
@@ -826,7 +947,7 @@ function removeFromQueue(id) {
   }
   state.queue.splice(idx, 1);
   
-  fetch(apiPath(`/api/queue/${id}`), { method: "DELETE" }).catch(err => console.error(err));
+  authFetch(apiPath(`/api/queue/${id}`), { method: "DELETE" }).catch(err => console.error(err));
   
   if (state.activeItemId === id) {
     state.activeItemId = state.queue.length > 0 ? state.queue[0].id : null;
@@ -846,7 +967,7 @@ function clearQueue() {
   state.queue = [];
   state.activeItemId = null;
   
-  fetch(apiPath("/api/queue"), { method: "DELETE" }).catch(err => console.error(err));
+  authFetch(apiPath("/api/queue"), { method: "DELETE" }).catch(err => console.error(err));
   
   renderQueue();
   renderPreview();
@@ -855,7 +976,7 @@ function clearQueue() {
 
 async function loadQueue() {
   try {
-    const res = await fetch(apiPath("/api/queue"));
+    const res = await authFetch(apiPath("/api/queue"));
     if (res.ok) {
       const items = await res.json();
       if (Array.isArray(items)) {
@@ -876,7 +997,7 @@ async function loadQueue() {
 async function saveQueue() {
   try {
     for (const item of state.queue) {
-      await fetch(apiPath("/api/queue"), {
+      await authFetch(apiPath("/api/queue"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(item)
@@ -1405,7 +1526,7 @@ async function saveAdminSettingsFromForm() {
   };
 
   try {
-    const res = await fetch(apiPath("/api/admin/settings"), {
+    const res = await authFetch(apiPath("/api/admin/settings"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(settings)
@@ -1433,12 +1554,6 @@ async function regenerateQueueItem(id) {
 
   if (item.status === "generating") {
     showToast("Article is currently generating.", "warning");
-    return;
-  }
-
-  if (!state.apiKey && !state.openaiApiKey) {
-    showToast("Please set your Gemini or OpenAI API key in Settings first.", "error");
-    openModal();
     return;
   }
 
@@ -1569,7 +1684,7 @@ async function generateArticle(item) {
       };
     }
 
-    const response = await fetch(endpoint, {
+    const response = await authFetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(bodyData),
@@ -1842,7 +1957,7 @@ function switchTab(tab) {
 // ── Article Manager ──────────────────────────────────────────────
 async function loadArticles() {
   try {
-    const res = await fetch(apiPath("/api/articles"));
+    const res = await authFetch(apiPath("/api/articles"));
     if (res.ok) {
       state.articles = await res.json();
       renderArticles();
@@ -2099,7 +2214,7 @@ function openEditArticleModal(item) {
 
 async function saveArticleItem(item) {
   try {
-    const res = await fetch(apiPath("/api/articles"), {
+    const res = await authFetch(apiPath("/api/articles"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(item)
@@ -2116,7 +2231,7 @@ async function saveArticleItem(item) {
 async function deleteArticleItem(id) {
   if (!confirm("Are you sure you want to delete this article entry?")) return;
   try {
-    const res = await fetch(apiPath(`/api/articles/${id}`), { method: "DELETE" });
+    const res = await authFetch(apiPath(`/api/articles/${id}`), { method: "DELETE" });
     if (res.ok) {
       showToast("Article deleted.", "info");
       loadArticles();
@@ -2421,7 +2536,7 @@ async function saveScheduleModal() {
   if (dom.btnSaveScheduleModal) dom.btnSaveScheduleModal.disabled = true;
 
   try {
-    const res = await fetch(apiPath("/api/articles/schedule-publish"), {
+    const res = await authFetch(apiPath("/api/articles/schedule-publish"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -2639,12 +2754,28 @@ ${rawContent.trim()}`;
 // ── Settings Modal & Theme ───────────────────────────────────────
 async function loadGlobalSettings() {
   try {
-    const res = await fetch(apiPath("/api/admin/settings"));
+    const res = await authFetch(apiPath("/api/admin/settings"));
     if (res.ok) {
       const settings = await res.json();
+      if (settings.apiKey && dom.apiKeyInput) dom.apiKeyInput.value = settings.apiKey;
+      if (settings.openaiApiKey && dom.openaiKeyInput) dom.openaiKeyInput.value = settings.openaiApiKey;
+      if (settings.model) {
+        state.model = settings.model;
+        if (dom.modelSelect) dom.modelSelect.value = settings.model;
+      }
       if (settings.wpUrl && dom.wpSiteUrlInput) dom.wpSiteUrlInput.value = settings.wpUrl;
       if (settings.wpUsername && dom.wpUsernameInput) dom.wpUsernameInput.value = settings.wpUsername;
       if (settings.wpAppPassword && dom.wpAppPasswordInput) dom.wpAppPasswordInput.value = settings.wpAppPassword;
+
+      if (settings.tone && dom.toneSelect) dom.toneSelect.value = settings.tone;
+      if (settings.customPrompt && dom.customPromptInput) dom.customPromptInput.value = settings.customPrompt;
+      if (settings.targetAudience && dom.targetAudienceInput) dom.targetAudienceInput.value = settings.targetAudience;
+      if (settings.brand && dom.brandInput) dom.brandInput.value = settings.brand;
+      if (settings.ctaLink && dom.ctaLinkInput) dom.ctaLinkInput.value = settings.ctaLink;
+      if (settings.wordCountMode && dom.wordCountModeSelect) dom.wordCountModeSelect.value = settings.wordCountMode;
+      if (settings.wordCountDivisor && dom.wordCountDivisorInput) dom.wordCountDivisorInput.value = settings.wordCountDivisor;
+      if (settings.targetWordCount && dom.targetWordCountInput) dom.targetWordCountInput.value = settings.targetWordCount;
+      if (settings.targetLanguage && dom.targetLanguageSelect) dom.targetLanguageSelect.value = settings.targetLanguage;
     }
   } catch (e) {
     console.error("Failed to load settings:", e);
@@ -2652,6 +2783,10 @@ async function loadGlobalSettings() {
 }
 
 function openModal() {
+  if (!state.isAdmin) {
+    showToast("Settings can only be configured by an Administrator.", "warning");
+    return;
+  }
   if (dom.settingsModal) dom.settingsModal.classList.add("active");
 }
 
@@ -2662,7 +2797,7 @@ function closeModal() {
 async function syncWordPressData() {
   showToast("Syncing articles with WordPress REST API...", "info");
   try {
-    const res = await fetch(apiPath("/api/articles/sync-wp"), { method: "POST" });
+    const res = await authFetch(apiPath("/api/articles/sync-wp"), { method: "POST" });
     const data = await res.json();
     if (res.ok && data.success) {
       let toastMsg = data.message || "WordPress sync complete!";
@@ -2688,7 +2823,7 @@ async function testWpConnection() {
 
   showToast("Testing WordPress API connection...", "info");
   try {
-    const res = await fetch(apiPath("/api/admin/test-wp-connection"), {
+    const res = await authFetch(apiPath("/api/admin/test-wp-connection"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ wpUrl, wpUsername, wpAppPassword })
@@ -2709,29 +2844,28 @@ async function testWpConnection() {
 }
 
 async function saveSettings() {
-  state.apiKey = dom.apiKeyInput ? dom.apiKeyInput.value.trim() : "";
-  state.openaiApiKey = dom.openaiKeyInput ? dom.openaiKeyInput.value.trim() : "";
-  state.model = dom.modelSelect ? dom.modelSelect.value : "gemini-2.5-flash";
+  if (!state.isAdmin) {
+    showToast("Unauthorized: Only Admins can modify settings.", "error");
+    return;
+  }
 
-  localStorage.setItem("af-api-key", state.apiKey);
-  localStorage.setItem("af-openai-key", state.openaiApiKey);
-  localStorage.setItem("af-model", state.model);
-
+  const apiKey = dom.apiKeyInput ? dom.apiKeyInput.value.trim() : "";
+  const openaiApiKey = dom.openaiKeyInput ? dom.openaiKeyInput.value.trim() : "";
+  const model = dom.modelSelect ? dom.modelSelect.value : "gemini-3.5-flash";
   const wpUrl = dom.wpSiteUrlInput ? dom.wpSiteUrlInput.value.trim() : "";
   const wpUsername = dom.wpUsernameInput ? dom.wpUsernameInput.value.trim() : "";
   const wpAppPassword = dom.wpAppPasswordInput ? dom.wpAppPasswordInput.value.trim() : "";
 
-  showToast("Saving settings & validating WordPress API...", "info");
+  showToast("Saving global settings & validating WordPress API...", "info");
 
   try {
-    const token = localStorage.getItem("af-admin-token");
-    const res = await fetch(apiPath("/api/admin/settings"), {
+    const res = await authFetch(apiPath("/api/admin/settings"), {
       method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        apiKey,
+        openaiApiKey,
+        model,
         wpUrl,
         wpUsername,
         wpAppPassword,
@@ -2741,6 +2875,7 @@ async function saveSettings() {
 
     if (res.ok) {
       const data = await res.json();
+      state.model = model;
       const wpV = data.wpVerification;
       if (wpV) {
         if (wpV.success && wpV.authenticated) {
@@ -2751,17 +2886,17 @@ async function saveSettings() {
           showToast(`⚠️ Settings saved, but WP API Check Failed: ${wpV.error}`, "error");
         }
       } else {
-        showToast("Settings saved successfully.", "success");
+        showToast("Global settings saved successfully.", "success");
       }
     } else {
-      showToast("Failed to save settings to server.", "error");
+      const errData = await res.json().catch(() => ({}));
+      showToast(errData.error || "Failed to save settings to server.", "error");
     }
   } catch (e) {
     console.error("Failed to save WP settings:", e);
     showToast(`Error: ${e.message}`, "error");
   }
 
-  updateApiStatus();
   closeModal();
 }
 
@@ -2785,6 +2920,19 @@ function updateApiStatus() {
 
 function applyTheme() {
   document.documentElement.setAttribute("data-theme", state.theme);
+  const isDark = state.theme === "dark";
+  const iconDark = $("#themeIconDark");
+  const iconLight = $("#themeIconLight");
+  if (iconDark && iconLight) {
+    iconDark.style.display = isDark ? "none" : "block";
+    iconLight.style.display = isDark ? "block" : "none";
+  }
+  const authIconDark = $(".auth-theme-icon-dark");
+  const authIconLight = $(".auth-theme-icon-light");
+  if (authIconDark && authIconLight) {
+    authIconDark.style.display = isDark ? "none" : "block";
+    authIconLight.style.display = isDark ? "block" : "none";
+  }
 }
 
 function toggleTheme() {
@@ -2825,7 +2973,7 @@ function compressImage(base64, maxWidth = 1000, maxHeight = 1000, quality = 0.75
 
 async function uploadImageToServer(base64Data) {
   try {
-    const res = await fetch(apiPath("/api/upload"), {
+    const res = await authFetch(apiPath("/api/upload"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageBase64: base64Data, base64: base64Data })

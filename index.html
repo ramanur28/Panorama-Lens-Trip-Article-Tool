@@ -11,11 +11,89 @@
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
+  <!-- ═══ Full Screen Authentication Gateway ═══ -->
+  <div id="authGateway" class="auth-gateway-overlay">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-brand">
+          <div class="auth-logo-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="url(#authLogoGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <defs><linearGradient id="authLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="auth-title">Panorama Lens Trip</h1>
+            <p class="auth-subtitle">Article Generator & Manager Tool</p>
+          </div>
+        </div>
+        <button class="btn-icon auth-theme-toggle" id="authThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
+          <svg class="auth-theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="auth-theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+
+      <div class="auth-card-body">
+        <div class="auth-welcome">
+          <h2>Welcome Back</h2>
+          <p>Please enter your credentials to access the workspace.</p>
+        </div>
+
+        <div id="authAlert" class="auth-alert" style="display: none;"></div>
+
+        <form id="authForm" autocomplete="on">
+          <div class="form-group">
+            <label for="authUsernameInput">Username</label>
+            <div class="input-with-action">
+              <input type="text" id="authUsernameInput" placeholder="Enter username (e.g. admin or user)" required autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="authPasswordInput">Password</label>
+            <div class="input-with-action">
+              <input type="password" id="authPasswordInput" placeholder="Enter password" required autocomplete="current-password" />
+              <button type="button" class="btn-icon" id="toggleAuthPasswordVisibility" title="Toggle password visibility" tabindex="-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit-btn" id="authSubmitBtn">
+            <span id="authBtnSpinner" class="auth-btn-spinner" style="display: none; margin-right: 6px;">⏳</span>
+            <span id="authBtnText">Sign In to Workspace</span>
+          </button>
+        </form>
+
+        <div class="auth-quick-section">
+          <p class="auth-quick-label">⚡ Quick Fill Demo Accounts</p>
+          <div class="auth-quick-grid">
+            <button type="button" class="auth-demo-card" id="quickLoginAdmin">
+              <span class="auth-demo-icon">👑</span>
+              <div class="auth-demo-text">
+                <span class="auth-demo-role">Administrator</span>
+                <span class="auth-demo-creds">admin / admin123</span>
+              </div>
+            </button>
+            <button type="button" class="auth-demo-card" id="quickLoginUser">
+              <span class="auth-demo-icon">👤</span>
+              <div class="auth-demo-text">
+                <span class="auth-demo-role">Standard User</span>
+                <span class="auth-demo-creds">user / user123</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="appContainer" style="display: none; flex-direction: column; min-height: 100vh;">
   <!-- ═══ Settings Modal ═══ -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>⚙️ Settings</h2>
+        <h2>⚙️ Admin Workspace Settings</h2>
         <button class="modal-close" id="closeSettings" aria-label="Close settings">&times;</button>
       </div>
       <div class="modal-body">
@@ -27,7 +105,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
-          <p class="form-hint">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Stored locally in your browser.</p>
+          <p class="form-hint">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Configured by Administrator and shared across all workspace users.</p>
         </div>
         <div class="form-group">
           <label for="openaiKeyInput">OpenAI API Key (Optional)</label>
@@ -73,8 +151,9 @@
               <label for="wpAppPasswordInput">Application Password</label>
               <input type="password" id="wpAppPasswordInput" placeholder="e.g. xxxx xxxx xxxx xxxx" autocomplete="off" />
             </div>
+          </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; gap: 0.5rem;">
-            <p class="form-hint" style="margin: 0; flex: 1;">Enter WP Application Password (WP Admin → Users → Profile → Application Passwords) to automatically post & schedule directly to WordPress.</p>
+            <p class="form-hint" style="margin: 0; flex: 1;">Use Application Password (WP Admin → Users → Profile → Application Passwords). If your host uses Imunify360 or Wordfence, ensure REST API automation or your IP is whitelisted.</p>
             <button type="button" class="btn btn-secondary btn-sm" id="btnTestWpConn" style="white-space: nowrap;">🔌 Test Connection</button>
           </div>
         </fieldset>
@@ -109,12 +188,23 @@
       </nav>
     </div>
     <div class="header-right">
-      <button class="btn btn-secondary btn-sm" id="adminLoginHeaderBtn" style="margin-right: 0.5rem;">Admin Login</button>
+      <!-- User profile & role badge -->
+      <div class="user-profile-badge" id="userProfileBadge" style="display: flex;">
+        <span class="user-role-avatar" id="userAvatar">👑</span>
+        <div class="user-info-text">
+          <span class="user-name" id="userHeaderName">admin</span>
+          <span class="user-role-tag" id="userRoleTag">Admin</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" title="Sign out of your account" style="margin-right: 0.25rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="hide-mobile">Logout</span>
+      </button>
       <button class="btn btn-ghost" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">
         <svg id="themeIconDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg id="themeIconLight" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <button class="btn btn-ghost" id="openSettings" title="Settings" aria-label="Settings">
+      <button class="btn btn-ghost admin-only-section" id="openSettings" title="Admin Settings" aria-label="Admin Settings" style="display: none;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
     </div>
@@ -767,24 +857,7 @@
     </div>
   </div>
 
-  <!-- ═══ Admin Login Modal ═══ -->
-  <div class="modal-overlay" id="adminLoginModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>🔒 Admin Login</h2>
-        <button class="modal-close" id="closeAdminLogin" aria-label="Close login">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="adminPasswordInput">Admin Password</label>
-          <input type="password" id="adminPasswordInput" placeholder="Enter admin password..." />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="submitAdminLogin">Login</button>
-      </div>
-    </div>
-  </div>
+  </div> <!-- /#appContainer -->
 
   <!-- ═══ Toast Container ═══ -->
   <div class="toast-container" id="toastContainer"></div>

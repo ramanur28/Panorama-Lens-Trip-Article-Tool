@@ -11,8 +11,63 @@ const SETTINGS_FILE = path.join(SETTINGS_DIR, 'admin_settings.json');
 const QUEUE_FILE = path.join(SETTINGS_DIR, 'articles.json');
 const MANAGER_FILE = path.join(SETTINGS_DIR, 'article_manager.json');
 
-// Session token for admin
+// User credentials configuration
+const USERS = {
+  admin: {
+    username: process.env.ADMIN_USERNAME || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'admin123',
+    role: 'admin',
+    name: 'Administrator'
+  },
+  user: {
+    username: process.env.USER_USERNAME || 'user',
+    password: process.env.USER_PASSWORD || 'user123',
+    role: 'user',
+    name: 'Standard User'
+  }
+};
+
+// Multi-token Active Session Store (token -> session info)
+const activeSessions = new Map();
 let adminSessionToken = null;
+
+function generateToken() {
+  return 'af_' + Math.random().toString(36).substring(2) + Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+function getSessionFromRequest(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return null;
+  const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : authHeader.split(' ')[1] || authHeader.trim();
+  if (!token) return null;
+  
+  if (adminSessionToken && token === adminSessionToken) {
+    return { username: USERS.admin.username, role: 'admin', name: USERS.admin.name };
+  }
+  
+  return activeSessions.get(token) || null;
+}
+
+function requireAuth(req, res, next) {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.status(401).json({ error: 'Authentication required. Please log in.' });
+  }
+  req.user = session;
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  const session = getSessionFromRequest(req);
+  if (!session) {
+    return res.status(401).json({ error: 'Authentication required. Please log in.' });
+  }
+  if (session.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin privileges required.' });
+  }
+  req.user = session;
+  next();
+}
 
 // Sync state
 let isSyncing = false;
@@ -20,12 +75,14 @@ let lastSyncTime = 0;
 
 // Helper to generate content from either Gemini or OpenAI
 async function generateContent({ model, prompt, apiKey, openaiApiKey, image }) {
-  const isOpenAI = model.startsWith('gpt-');
+  const adminSettings = getAdminSettings();
+  const effectiveModel = model || adminSettings.model || 'gemini-3.5-flash';
+  const isOpenAI = effectiveModel.startsWith('gpt-');
   
   if (isOpenAI) {
-    const key = openaiApiKey || process.env.OPENAI_API_KEY;
+    const key = openaiApiKey || adminSettings.openaiApiKey || process.env.OPENAI_API_KEY;
     if (!key) {
-      throw new Error('OpenAI API Key is required for this model.');
+      throw new Error('OpenAI API Key is not configured by the Administrator. Please contact your admin.');
     }
     
     let content;
@@ -48,12 +105,12 @@ async function generateContent({ model, prompt, apiKey, openaiApiKey, image }) {
     ];
     
     const reqBody = {
-      model,
+      model: effectiveModel,
       messages
     };
     
     // Omit temperature for reasoning (o1/o3), gpt-5, or luna models to avoid API errors
-    const isReasoningModel = model.startsWith('o1') || model.startsWith('o3') || model.includes('luna') || model.startsWith('gpt-5');
+    const isReasoningModel = effectiveModel.startsWith('o1') || effectiveModel.startsWith('o3') || effectiveModel.includes('luna') || effectiveModel.startsWith('gpt-5');
     if (!isReasoningModel) {
       reqBody.temperature = 0.7;
     }
@@ -83,9 +140,9 @@ async function generateContent({ model, prompt, apiKey, openaiApiKey, image }) {
     };
   } else {
     // Gemini API
-    const key = apiKey || process.env.GEMINI_API_KEY;
+    const key = apiKey || adminSettings.apiKey || process.env.GEMINI_API_KEY;
     if (!key) {
-      throw new Error('Gemini API Key is required.');
+      throw new Error('Gemini API Key is not configured by the Administrator. Please contact your admin.');
     }
     const ai = new GoogleGenAI({ apiKey: key });
     
@@ -105,7 +162,7 @@ async function generateContent({ model, prompt, apiKey, openaiApiKey, image }) {
     }
     
     const response = await ai.models.generateContent({
-      model,
+      model: effectiveModel,
       contents,
       config: { temperature: 0.7 }
     });
@@ -214,7 +271,7 @@ app.use(express.static('dist', {
 app.use('/uploads', express.static(path.join(SETTINGS_DIR, 'uploads')));
 
 // Image Upload Endpoint (handles both /api/upload and /api/upload-image)
-app.post(['/api/upload', '/api/upload-image'], (req, res) => {
+app.post(['/api/upload', '/api/upload-image'], requireAuth, (req, res) => {
   const imageBase64 = req.body.imageBase64 || req.body.base64;
   if (!imageBase64) {
     return res.status(400).json({ error: 'No image data provided' });
@@ -247,43 +304,137 @@ app.post(['/api/upload', '/api/upload-image'], (req, res) => {
   }
 });
 
-// ── Admin Endpoints ───────────────────────────────────────────────
-app.get(['/api/settings', '/api/admin/settings'], (req, res) => {
-  res.json(getAdminSettings());
+// ── Auth Endpoints ───────────────────────────────────────────────
+app.post(['/api/auth/login', '/api/login'], (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required.' });
+  }
+
+  const cleanUser = String(username).trim().toLowerCase();
+  let matchedUser = null;
+
+  if (cleanUser === USERS.admin.username.toLowerCase() && password === USERS.admin.password) {
+    matchedUser = USERS.admin;
+  } else if (cleanUser === USERS.user.username.toLowerCase() && password === USERS.user.password) {
+    matchedUser = USERS.user;
+  }
+
+  if (!matchedUser) {
+    return res.status(401).json({ error: 'Invalid username or password.' });
+  }
+
+  const token = generateToken();
+  const sessionData = {
+    username: matchedUser.username,
+    role: matchedUser.role,
+    name: matchedUser.name,
+    createdAt: Date.now()
+  };
+
+  activeSessions.set(token, sessionData);
+  if (matchedUser.role === 'admin') {
+    adminSessionToken = token;
+  }
+
+  return res.json({
+    token,
+    user: {
+      username: matchedUser.username,
+      role: matchedUser.role,
+      name: matchedUser.name
+    }
+  });
 });
 
+app.post(['/api/auth/logout', '/api/logout'], (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : authHeader.split(' ')[1] || authHeader.trim();
+    if (token) {
+      activeSessions.delete(token);
+      if (token === adminSessionToken) adminSessionToken = null;
+    }
+  }
+  res.json({ success: true });
+});
+
+app.get(['/api/auth/me', '/api/auth/check-session', '/api/auth/status'], (req, res) => {
+  const session = getSessionFromRequest(req);
+  if (session) {
+    return res.json({
+      authenticated: true,
+      user: {
+        username: session.username,
+        role: session.role,
+        name: session.name
+      }
+    });
+  }
+  return res.json({ authenticated: false, user: null });
+});
+
+// Legacy Admin Endpoints compatibility
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
-  const correctPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  if (password === correctPassword) {
-    adminSessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    return res.json({ token: adminSessionToken });
+  if (password === USERS.admin.password) {
+    const token = generateToken();
+    adminSessionToken = token;
+    activeSessions.set(token, {
+      username: USERS.admin.username,
+      role: 'admin',
+      name: USERS.admin.name,
+      createdAt: Date.now()
+    });
+    return res.json({ token, user: { username: USERS.admin.username, role: 'admin' } });
   }
   res.status(401).json({ error: 'Invalid password' });
 });
 
 app.post('/api/admin/logout', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(' ')[1];
+    if (token) activeSessions.delete(token);
+  }
   adminSessionToken = null;
   res.json({ success: true });
 });
 
 app.get('/api/admin/check-session', (req, res) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (token && token === adminSessionToken) {
-    return res.json({ loggedIn: true });
+  const session = getSessionFromRequest(req);
+  if (session && session.role === 'admin') {
+    return res.json({ loggedIn: true, role: 'admin' });
   }
   res.json({ loggedIn: false });
 });
 
-app.post('/api/admin/test-wp-connection', async (req, res) => {
+// ── Admin & Settings Endpoints ────────────────────────────────────
+app.get(['/api/settings', '/api/admin/settings'], requireAuth, (req, res) => {
+  const settings = getAdminSettings();
+  if (req.user && req.user.role === 'admin') {
+    return res.json(settings);
+  }
+  // For standard users, return configuration without exposing secret keys
+  const safeSettings = {
+    ...settings,
+    apiKey: settings.apiKey ? '••••••••' : '',
+    openaiApiKey: settings.openaiApiKey ? '••••••••' : '',
+    wpAppPassword: settings.wpAppPassword ? '••••••••' : '',
+    hasApiKey: !!settings.apiKey,
+    hasOpenaiApiKey: !!settings.openaiApiKey,
+    hasWpConfig: !!(settings.wpUsername && settings.wpAppPassword)
+  };
+  res.json(safeSettings);
+});
+
+app.post('/api/admin/test-wp-connection', requireAdmin, async (req, res) => {
   const { wpUrl, wpUsername, wpAppPassword } = req.body;
   const result = await verifyWordPressConfig(wpUrl, wpUsername, wpAppPassword);
   return res.json(result);
 });
 
-app.post('/api/articles/sync-wp', async (req, res) => {
+app.post('/api/articles/sync-wp', requireAuth, async (req, res) => {
   try {
     const adminSettings = getAdminSettings();
     const wpUsername = adminSettings.wpUsername || process.env.WP_USERNAME;
@@ -308,15 +459,10 @@ app.post('/api/articles/sync-wp', async (req, res) => {
   }
 });
 
-app.post('/api/admin/settings', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token || token !== adminSessionToken) {
-    return res.status(403).json({ error: 'Unauthorized' });
-  }
+app.post('/api/admin/settings', requireAdmin, async (req, res) => {
   
   const { 
+    apiKey, openaiApiKey, model,
     tone, customPrompt, targetAudience, brand, targetWordCount, 
     wordCountMode, wordCountDivisor, targetLanguage, ctaLink,
     wpUrl, wpUsername, wpAppPassword, testConnection 
@@ -329,6 +475,9 @@ app.post('/api/admin/settings', async (req, res) => {
 
   const updated = {
     ...currentSettings,
+    apiKey: apiKey !== undefined ? apiKey : (currentSettings.apiKey || ''),
+    openaiApiKey: openaiApiKey !== undefined ? openaiApiKey : (currentSettings.openaiApiKey || ''),
+    model: model || currentSettings.model || 'gemini-3.5-flash',
     tone: tone || currentSettings.tone || 'Professional',
     customPrompt: customPrompt !== undefined ? customPrompt : (currentSettings.customPrompt || ''),
     targetAudience: targetAudience !== undefined ? targetAudience : (currentSettings.targetAudience || ''),
@@ -474,6 +623,53 @@ function normalizeTitle(str) {
     .trim();
 }
 
+// Helper to sanitize WordPress URL
+function sanitizeWordPressUrl(rawUrl) {
+  let url = (rawUrl || '').trim();
+  if (!url) return '';
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  return url
+    .replace(/\/wp-admin(\/.*)?$/i, '')
+    .replace(/\/wp-login\.php.*$/i, '')
+    .replace(/\/wp-json(\/.*)?$/i, '')
+    .replace(/\/+$/, '');
+}
+
+// Helper to analyze WordPress and hosting firewall errors
+function analyzeWordPressError(resStatus, bodyText, targetUrl) {
+  const text = (bodyText || '').trim();
+  
+  if (text.includes('Imunify360') || text.includes('bot-protection')) {
+    return '🛡️ Blocked by Imunify360 Bot-Protection on your hosting server. Your WordPress server firewall is blocking REST API automation requests. Solution: Whitelist your IP in cPanel (cPanel > Imunify360 > Whitelist) or contact hosting support to allow REST API access.';
+  }
+  
+  if (text.includes('Wordfence') || text.includes('blocked by Wordfence')) {
+    return '🛡️ Blocked by Wordfence Web Application Firewall. Solution: In WordPress Admin, go to Wordfence > Tools > Live Traffic and whitelist your current IP address.';
+  }
+
+  if (text.includes('Cloudflare') || text.includes('Attention Required! | Cloudflare') || text.includes('cf-chl-bypass')) {
+    return '🛡️ Blocked by Cloudflare Bot Management / Challenge. Solution: Add a WAF Custom Rule in your Cloudflare dashboard to allow / bypass path /wp-json/*.';
+  }
+
+  if (resStatus === 401 || resStatus === 403) {
+    try {
+      const json = JSON.parse(text);
+      if (json.message) {
+        return 'WordPress Authentication Error (' + resStatus + '): ' + json.message;
+      }
+    } catch (_) {}
+    return 'WordPress Authentication Failed (HTTP ' + resStatus + '). Please verify your WordPress Username and Application Password (generated in WP Admin > Users > Profile > Application Passwords).';
+  }
+
+  if (resStatus === 404) {
+    return 'WordPress REST API not found at ' + targetUrl + '/wp-json/wp/v2 (HTTP 404). Please ensure WordPress Permalinks are set to Post Name (WP Admin > Settings > Permalinks).';
+  }
+
+  return 'Could not connect to WordPress REST API at ' + targetUrl + ' (HTTP ' + resStatus + (text ? ': ' + text.substring(0, 150) : '') + ').';
+}
+
 // Link normalizer for matching
 function normalizeLink(url) {
   if (!url) return '';
@@ -484,7 +680,7 @@ function normalizeLink(url) {
 async function verifyWordPressConfig(url, username, password) {
   const adminSettings = getAdminSettings();
   const rawUrl = url !== undefined ? url : (adminSettings.wpUrl || process.env.WP_URL || 'https://panoramalenstrip.com');
-  const wpBaseUrl = (rawUrl || 'https://panoramalenstrip.com').replace(/\/$/, '');
+  const wpBaseUrl = sanitizeWordPressUrl(rawUrl);
   const cleanUser = (username !== undefined ? username : (adminSettings.wpUsername || process.env.WP_USERNAME || '')).trim();
   const rawPass = password !== undefined ? password : (adminSettings.wpAppPassword || process.env.WP_APPLICATION_PASSWORD || '');
   const cleanPass = (rawPass || '').replace(/\s+/g, '');
@@ -493,7 +689,12 @@ async function verifyWordPressConfig(url, username, password) {
     return { success: false, error: 'WordPress Site URL is required.' };
   }
 
-  const headers = { 'User-Agent': 'Panorama-Lens-Trip-Article-Tool/1.0' };
+  const browserUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+  const headers = { 
+    'User-Agent': browserUserAgent,
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9'
+  };
   let isAuthenticated = false;
 
   if (cleanUser && cleanPass) {
@@ -504,43 +705,48 @@ async function verifyWordPressConfig(url, username, password) {
 
   try {
     if (isAuthenticated) {
-      const meRes = await fetch(`${wpBaseUrl}/wp-json/wp/v2/users/me`, { headers });
+      const meRes = await fetch(`${wpBaseUrl}/wp-json/wp/v2/users/me`, { 
+        headers,
+        signal: AbortSignal.timeout(12000)
+      });
+      const bodyText = await meRes.text();
+      
       if (meRes.ok) {
-        const userData = await meRes.json();
+        let userData = {};
+        try { userData = JSON.parse(bodyText); } catch (_) {}
         return {
           success: true,
           authenticated: true,
           user: userData.name || userData.slug || cleanUser,
           message: `Successfully connected & authenticated with WordPress as "${userData.name || cleanUser}"!`
         };
-      } else if (meRes.status === 401 || meRes.status === 403) {
+      } else {
+        const errorMsg = analyzeWordPressError(meRes.status, bodyText, wpBaseUrl);
         return {
           success: false,
           authenticated: false,
-          error: `WordPress Authentication Failed (HTTP ${meRes.status}). Please check your WP Username and Application Password.`
+          error: errorMsg
         };
       }
     }
 
-    // Fallback public check
-    const testRes = await fetch(`${wpBaseUrl}/wp-json/wp/v2/posts?per_page=1`, { headers });
+    // Fallback public check if no credentials provided
+    const testRes = await fetch(`${wpBaseUrl}/wp-json/wp/v2/posts?per_page=1`, { 
+      headers,
+      signal: AbortSignal.timeout(12000)
+    });
+    const bodyText = await testRes.text();
     if (testRes.ok) {
-      if (isAuthenticated) {
-        return {
-          success: false,
-          authenticated: false,
-          error: `Connected to site ${wpBaseUrl}, but WordPress Authentication failed. Please verify your Application Password.`
-        };
-      }
       return {
         success: true,
         authenticated: false,
         message: `Connected to WordPress REST API at ${wpBaseUrl} (Public access only).`
       };
     } else {
+      const errorMsg = analyzeWordPressError(testRes.status, bodyText, wpBaseUrl);
       return {
         success: false,
-        error: `Could not connect to WordPress REST API at ${wpBaseUrl} (HTTP ${testRes.status}).`
+        error: errorMsg
       };
     }
   } catch (err) {
@@ -559,7 +765,7 @@ async function fetchAllWordPressPosts() {
   let hasMore = true;
   
   const adminSettings = getAdminSettings();
-  const wpBaseUrl = (adminSettings.wpUrl || process.env.WP_URL || process.env.WORDPRESS_URL || 'https://panoramalenstrip.com').replace(/\/$/, '');
+  const wpBaseUrl = sanitizeWordPressUrl(adminSettings.wpUrl || process.env.WP_URL || process.env.WORDPRESS_URL || 'https://panoramalenstrip.com');
   const wpUsername = (adminSettings.wpUsername || process.env.WP_USERNAME || process.env.WORDPRESS_USERNAME || '').trim();
   const rawPass = adminSettings.wpAppPassword || process.env.WP_APPLICATION_PASSWORD || process.env.WORDPRESS_APPLICATION_PASSWORD || '';
   const wpAppPassword = rawPass.replace(/\s+/g, '');
@@ -786,14 +992,13 @@ async function syncWordPressArticles() {
 
 // Helper to check if request is admin authorized
 function checkAdminAuth(req) {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-  return token && token === adminSessionToken;
+  const session = getSessionFromRequest(req);
+  return session && session.role === 'admin';
 }
 
 // ── Article Manager Endpoints ─────────────────────────────────────
 // Get all articles (with background auto-sync check)
-app.get('/api/articles', async (req, res) => {
+app.get('/api/articles', requireAuth, async (req, res) => {
   const items = getManagerItems();
   
   const now = Date.now();
@@ -1404,7 +1609,7 @@ async function getOrCreateWpTagId(wpUrl, credentials, tagName) {
 
 async function postToWordPress({ url, username, password, title, content, action, date, images }) {
   const adminSettings = getAdminSettings();
-  const wpUrl = (url || adminSettings.wpUrl || process.env.WP_URL || process.env.WORDPRESS_URL || 'https://panoramalenstrip.com').replace(/\/$/, '');
+  const wpUrl = sanitizeWordPressUrl(url || adminSettings.wpUrl || process.env.WP_URL || process.env.WORDPRESS_URL || 'https://panoramalenstrip.com');
   const wpUser = username || adminSettings.wpUsername || process.env.WP_USERNAME || process.env.WORDPRESS_USERNAME;
   const wpPass = password || adminSettings.wpAppPassword || process.env.WP_APPLICATION_PASSWORD || process.env.WORDPRESS_APPLICATION_PASSWORD;
 
@@ -1752,7 +1957,7 @@ async function postToWordPress({ url, username, password, title, content, action
 }
 
 // Endpoint for publishing/scheduling articles (accessible from Queue & Calendar)
-app.post('/api/articles/schedule-publish', async (req, res) => {
+app.post('/api/articles/schedule-publish', requireAuth, async (req, res) => {
   const { articleId, title, keyphrase, link, action, date, content, wpCredentials, images } = req.body;
   if (!title && !keyphrase && !articleId) {
     return res.status(400).json({ error: 'Article identifier is required' });
@@ -1993,7 +2198,7 @@ app.post('/api/articles/import-csv', (req, res) => {
 });
 
 // Explicit Sync endpoint
-app.post('/api/articles/sync', async (req, res) => {
+app.post('/api/articles/sync', requireAuth, async (req, res) => {
   try {
     const result = await syncWordPressArticles();
     res.json({
@@ -2010,12 +2215,12 @@ app.post('/api/articles/sync', async (req, res) => {
 
 // ── Queue Database Endpoints ─────────────────────────────────────
 // Get all queue items
-app.get('/api/queue', (req, res) => {
+app.get('/api/queue', requireAuth, (req, res) => {
   res.json(getQueueItems());
 });
 
 // Add or update a queue item
-app.post('/api/queue', (req, res) => {
+app.post('/api/queue', requireAuth, (req, res) => {
   const item = req.body;
   if (!item || item.id === undefined) {
     return res.status(400).json({ error: 'Invalid item data' });
@@ -2037,7 +2242,7 @@ app.post('/api/queue', (req, res) => {
 });
 
 // Delete a specific queue item
-app.delete('/api/queue/:id', (req, res) => {
+app.delete('/api/queue/:id', requireAdmin, (req, res) => {
   const id = parseInt(req.params.id);
   if (isNaN(id)) {
     return res.status(400).json({ error: 'Invalid item ID' });
@@ -2054,7 +2259,7 @@ app.delete('/api/queue/:id', (req, res) => {
 });
 
 // Clear all queue items
-app.delete('/api/queue', (req, res) => {
+app.delete('/api/queue', requireAdmin, (req, res) => {
   if (saveQueueItems([])) {
     res.json({ success: true });
   } else {
@@ -2070,20 +2275,27 @@ function sendSSE(res, type, data) {
   res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
 }
 
-app.post('/api/generate', async (req, res) => {
+app.post('/api/generate', requireAuth, async (req, res) => {
   const { apiKey, openaiApiKey, title, topic, keyphrase, pageRole, starterArticle, model, expertQuotations, images, internalLinks, customPrompt, targetAudience, brand } = req.body;
 
-  if (!apiKey && !openaiApiKey) {
-    return res.status(400).json({ error: 'API key is required' });
+  // Load global admin settings
+  const adminSettings = getAdminSettings();
+  const effectiveApiKey = apiKey || adminSettings.apiKey || process.env.GEMINI_API_KEY;
+  const effectiveOpenaiApiKey = openaiApiKey || adminSettings.openaiApiKey || process.env.OPENAI_API_KEY;
+  const effectiveModel = model || adminSettings.model || 'gemini-3.5-flash';
+  const isOpenAI = effectiveModel.startsWith('gpt-');
+
+  if (isOpenAI && !effectiveOpenaiApiKey) {
+    return res.status(400).json({ error: 'OpenAI API key has not been configured by the Administrator.' });
+  }
+  if (!isOpenAI && !effectiveApiKey) {
+    return res.status(400).json({ error: 'Gemini API key has not been configured by the Administrator.' });
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
-
-  // Load global admin settings
-  const adminSettings = getAdminSettings();
   const tone = adminSettings.tone || 'Professional';
   const targetLanguage = adminSettings.targetLanguage || 'English';
   const finalCustomPrompt = customPrompt || adminSettings.customPrompt || '';
@@ -2652,20 +2864,27 @@ Format the output EXACTLY like this:
 });
 
 // ── Update Section Endpoint ───────────────────────────────────────
-app.post('/api/update-section', async (req, res) => {
+app.post('/api/update-section', requireAuth, async (req, res) => {
   const { apiKey, openaiApiKey, title, wpUrl, targetSubtitle, starterWritings, model, expertQuotations, customPrompt, targetAudience, brand } = req.body;
 
-  if (!apiKey && !openaiApiKey) {
-    return res.status(400).json({ error: 'API key is required' });
+  // Load global admin settings
+  const adminSettings = getAdminSettings();
+  const effectiveApiKey = apiKey || adminSettings.apiKey || process.env.GEMINI_API_KEY;
+  const effectiveOpenaiApiKey = openaiApiKey || adminSettings.openaiApiKey || process.env.OPENAI_API_KEY;
+  const effectiveModel = model || adminSettings.model || 'gemini-3.5-flash';
+  const isOpenAI = effectiveModel.startsWith('gpt-');
+
+  if (isOpenAI && !effectiveOpenaiApiKey) {
+    return res.status(400).json({ error: 'OpenAI API key has not been configured by the Administrator.' });
+  }
+  if (!isOpenAI && !effectiveApiKey) {
+    return res.status(400).json({ error: 'Gemini API key has not been configured by the Administrator.' });
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
-
-  // Load global admin settings
-  const adminSettings = getAdminSettings();
   const targetLanguage = adminSettings.targetLanguage || 'English';
   const finalCustomPrompt = customPrompt || adminSettings.customPrompt || '';
   const finalTargetAudience = targetAudience || adminSettings.targetAudience || '';
@@ -2766,11 +2985,20 @@ Requirements:
 });
 
 // ── Insert Internal Link Endpoint ──────────────────────────────────
-app.post('/api/insert-link', async (req, res) => {
+app.post('/api/insert-link', requireAuth, async (req, res) => {
   const { apiKey, openaiApiKey, articleText, links, model } = req.body;
 
-  if (!apiKey && !openaiApiKey) {
-    return res.status(400).json({ error: 'API key is required' });
+  const adminSettings = getAdminSettings();
+  const effectiveApiKey = apiKey || adminSettings.apiKey || process.env.GEMINI_API_KEY;
+  const effectiveOpenaiApiKey = openaiApiKey || adminSettings.openaiApiKey || process.env.OPENAI_API_KEY;
+  const effectiveModel = model || adminSettings.model || 'gemini-3.5-flash';
+  const isOpenAI = effectiveModel.startsWith('gpt-');
+
+  if (isOpenAI && !effectiveOpenaiApiKey) {
+    return res.status(400).json({ error: 'OpenAI API key has not been configured by the Administrator.' });
+  }
+  if (!isOpenAI && !effectiveApiKey) {
+    return res.status(400).json({ error: 'Gemini API key has not been configured by the Administrator.' });
   }
   if (!articleText) {
     return res.status(400).json({ error: 'Article text is required' });
@@ -2785,7 +3013,7 @@ app.post('/api/insert-link', async (req, res) => {
   res.flushHeaders();
 
   try {
-    const modelName = model || 'gemini-3.5-flash';
+    const modelName = effectiveModel;
 
     sendSSE(res, 'progress', { step: 'analyze', message: 'Analyzing article structure...', percent: 20 });
 
@@ -2839,11 +3067,20 @@ ${articleText}`;
 });
 
 // ── Generate Image SEO Metadata Endpoint ──────────────────────────
-app.post('/api/generate-image-meta', async (req, res) => {
+app.post('/api/generate-image-meta', requireAuth, async (req, res) => {
   const { apiKey, openaiApiKey, imageBase64, imageUrl, model, location, scene } = req.body;
 
-  if (!apiKey && !openaiApiKey) {
-    return res.status(400).json({ error: 'API key is required' });
+  const adminSettings = getAdminSettings();
+  const effectiveApiKey = apiKey || adminSettings.apiKey || process.env.GEMINI_API_KEY;
+  const effectiveOpenaiApiKey = openaiApiKey || adminSettings.openaiApiKey || process.env.OPENAI_API_KEY;
+  const effectiveModel = model || adminSettings.model || 'gemini-3.5-flash';
+  const isOpenAI = effectiveModel.startsWith('gpt-');
+
+  if (isOpenAI && !effectiveOpenaiApiKey) {
+    return res.status(400).json({ error: 'OpenAI API key has not been configured by the Administrator.' });
+  }
+  if (!isOpenAI && !effectiveApiKey) {
+    return res.status(400).json({ error: 'Gemini API key has not been configured by the Administrator.' });
   }
   if (!imageBase64 && !imageUrl) {
     return res.status(400).json({ error: 'Image is required' });
@@ -2854,13 +3091,11 @@ app.post('/api/generate-image-meta', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
-  // Load global admin settings
-  const adminSettings = getAdminSettings();
   const customPrompt = adminSettings.customPrompt || '';
   const targetLanguage = adminSettings.targetLanguage || 'English';
 
   try {
-    const modelName = model || 'gemini-3.5-flash';
+    const modelName = effectiveModel;
 
     sendSSE(res, 'progress', { step: 'analyze', message: 'Analyzing image and inputs...', percent: 20 });
 
