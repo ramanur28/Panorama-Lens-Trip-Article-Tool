@@ -7,10 +7,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy application source
+# Copy application source and build frontend
 COPY . .
-
-# Build the Vite frontend
 RUN npm run build
 
 # Production stage
@@ -20,13 +18,13 @@ WORKDIR /app
 
 # Copy package files and install production dependencies only
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --no-audit --no-fund
 
-# Copy the built frontend and backend files from the builder
+# Copy built frontend assets and server backend
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server.js ./server.js
 
-# Expose the API port
+# Expose server port
 EXPOSE 3001
 
 # Set production environment
@@ -34,4 +32,4 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
