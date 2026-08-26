@@ -1,114 +1,224 @@
-# ArticleForge AI
+# 🌐 Panorama Lens Trip — AI Article Generator & Manager Tool
 
-A powerful, full-stack application that leverages the **Gemini API** to generate comprehensive, SEO-optimized, 2000+ word articles with customizable tone, style, expert quotations, and more. It can also securely update existing articles or rewrite targeted sections.
-
-## 🚀 Features
-- **Intelligent Long-Form Generation**: Automatically creates a structured outline, then incrementally writes introductions, sections, and conclusions to guarantee length and depth.
-- **Section Updater (Rewriter)**: Feed it an existing article and have the AI seamlessly rewrite or add a specific section (e.g., adding a "Hidden Gem" section to a travel guide).
-- **SEO Metadata**: Automatically generates a highly optimized Meta Title, Description, URL Slug, Tags, and Excerpt.
-- **Expert Quotations**: Easily weave expert quotes and references dynamically into the output.
-- **Local Network Support**: Run it on your PC and access it via your phone or tablet on the same Wi-Fi network.
-- **Dark/Light Themes**: A beautifully crafted, responsive UI that supports native theme toggling.
-- **Persistent Settings**: Remembers your Gemini API Key, Target Audience, Brand, and Custom Prompts directly in your browser.
+> **Platform Otomasi Pembuatan Artikel SEO Long-Form (2000+ Kata), Generator Image SEO Metadata, Editorial Calendar, & Auto-Publish WordPress Berbasis Google Gemini AI.**
 
 ---
 
-## 🛠 Prerequisites
-
-Make sure you have the following installed on your machine:
-1. **Node.js** (v18 or newer recommended)
-2. **npm** (comes with Node.js)
-3. **A Gemini API Key** (Get one for free at [Google AI Studio](https://aistudio.google.com/apikey))
+## 📖 Daftar Isi
+- [✨ Fitur Utama](#-fitur-utama)
+- [🏗️ Arsitektur Teknologi](#️-arsitektur-teknologi)
+- [📂 Struktur Proyek](#-struktur-proyek)
+- [🚀 Panduan Instalasi & Menjalankan Lokal](#-panduan-instalasi--menjalankan-lokal)
+- [🐳 Menjalankan dengan Docker](#-menjalankan-dengan-docker)
+- [🚢 Panduan Auto-Deploy ke Server VPS](#-panduan-auto-deploy-ke-server-vps)
+- [🔄 Backup & Sinkronisasi Data (Lokal <-> VPS)](#-backup--sinkronisasi-data-lokal---vps)
+- [🔒 Manajemen Kredensial & Autentikasi](#-manajemen-kredensial--autentikasi)
+- [📑 Dokumentasi Lengkap](#-dokumentasi-lengkap)
 
 ---
 
-## 💻 How to Run (Development Mode)
+## ✨ Fitur Utama
 
-This mode runs the application using Vite's fast hot-module reloading and concurrently boots up the Express backend.
+### 1. ✍️ AI Long-Form Article Generation (2000+ Kata)
+- **Struktur Komprehensif**: Outline otomatis, pengantar mendalam, sub-bab berbasis H2/H3, dan kesimpulan bernilai tinggi.
+- **Optimasi SEO Mendalam**: Menghitung kepadatan kata kunci (*keyphrase density*), meta title, meta description, slug URL, tags, dan excerpt secara otomatis.
+- **Integrasi Call-To-Action (CTA)**: Tombol WhatsApp & link CTA dinamis yang dapat disesuaikan untuk kebutuhan bisnis Panorama Lens Trip.
+- **Section Updater & Rewriter**: Memperbarui atau menambahkan bagian baru pada artikel lama tanpa menulis ulang dari awal.
 
-1. **Install Dependencies**
-   Open your terminal in the project folder and run:
+### 2. 🖼️ AI Image SEO Metadata Generator
+- **Multi-Image Upload & Canvas Compression**: Kompresi gambar otomatis di sisi browser sebelum diunggah ke server.
+- **Analisis AI Visual**: Mengisi *Alt Text, Title, Caption, Description*, dan *Scene Location* otomatis untuk mendominasi Google Image Search.
+- **Ekspor Cepat**: Salin Alt Text instan atau download metadata gambar format `.meta.txt`.
+
+### 3. 📅 Editorial Calendar & Article Manager
+- **Status Alur Kerja**: Pelacakan status *Draft, Scheduled, Published*.
+- **Kalender Interaktif**: Visualisasi jadwal rilis artikel bulanan dengan fitur *drag/reschedule*.
+- **WordPress Integration**: Publikasi artikel langsung ke website WordPress via REST API & Application Password.
+
+### 4. 👥 Sistem Autentikasi Berbasis Peran (RBAC)
+- **Role Admin**: Akses penuh ke pengaturan API key, konfigurasi WordPress, prompt sistem, dan manajemen user.
+- **Role User/Editor**: Fokus pada pembuatan konten, antrean artikel, dan kalender editorial.
+
+### 5. 🛠️ DevOps & Auto-Deployment Cerdas
+- **Build Lokal & Push ke Docker Hub**: Hemat CPU/RAM server VPS (aman untuk VPS 1GB/2GB).
+- **Persistent Volume (`./data`)**: Seluruh database JSON dan gambar uploads tidak akan hilang saat container diperbarui.
+- **Auto-Sync & Backup Script**: Utilitas 1-klik untuk sinkronisasi dua arah data lokal dan VPS.
+
+---
+
+## 🏗️ Arsitektur Teknologi
+
+```
++-----------------------------------------------------------------------+
+|                           FRONTEND (SPA)                             |
+|  HTML5 Semantik • Vanilla CSS (Glassmorphism & Dark Mode) • Vite 6   |
+|  Marked.js (Markdown Renderer) • Client-side Canvas Image Compressor   |
++-----------------------------------------------------------------------+
+                                  │ (HTTP / SSE Streams)
+                                  ▼
++-----------------------------------------------------------------------+
+|                           BACKEND SERVER                              |
+|  Node.js (v20) • Express.js • Server-Sent Events (SSE Realtime Stream)|
+|  Cheerio (Scraping & Research) • Multer/FS Data Storage Manager       |
++-----------------------------------------------------------------------+
+                                  │
+         ┌────────────────────────┴────────────────────────┐
+         ▼                                                 ▼
++──────────────────+                             +──────────────────+
+|  AI & API CLOUD  |                             | PERSISTENT STORE |
+| Google Gemini AI |                             | ./data/ JSON DB  |
+| OpenAI (Opsional)|                             | ./data/uploads/  |
+| WordPress REST   |                             +──────────────────+
++──────────────────+
+```
+
+---
+
+## 📂 Struktur Proyek
+
+```text
+Panorama-Lens-Trip-Article-Tool/
+├── data/                         # Direktori database JSON & file uploads (persisten)
+│   ├── admin_settings.json       # Pengaturan API key, CTA, prompt, WP config
+│   ├── article_manager.json      # Database kalender & status artikel
+│   ├── articles.json             # Database antrean artikel
+│   └── uploads/                  # Berkas gambar artikel yang diunggah
+├── src/
+│   ├── main.js                   # Logika frontend utama (SPA Controller)
+│   └── style.css                 # Sistem desain responsif, modern, dark/light theme
+├── backups/                      # Folder arsip otomatis data production
+├── index.html                    # Kerangka antarmuka utama aplikasi
+├── server.js                     # Backend API server (Express + Gemini + Auth + WP)
+├── Dockerfile                    # Multi-stage build container production
+├── docker-compose.yml            # Konfigurasi Docker compose lokal
+├── docker-compose.prod.yml       # Konfigurasi Docker compose production (VPS)
+├── deploy.sh                     # Auto-deploy script untuk Linux / macOS / WSL
+├── deploy.ps1                    # Auto-deploy script untuk Windows PowerShell
+├── sync-data.sh                  # Backup & sync script untuk Linux / macOS / WSL
+├── sync-data.ps1                 # Backup & sync script untuk Windows PowerShell
+├── setup-vps.sh                  # Script inisialisasi Docker & Firewall server VPS
+├── .env.deploy.example           # Template konfigurasi deployment
+├── .env.production.example       # Template environment variable server production
+├── DEPLOY_GUIDE.md               # Panduan deployment VPS detail
+└── DOCUMENTATION.md              # Dokumentasi teknis lengkap & API reference
+```
+
+---
+
+## 🚀 Panduan Instalasi & Menjalankan Lokal
+
+### Prasyarat:
+- Node.js (v18 atau v20 LTS disarankan)
+- npm (bawaan Node.js)
+- Kunci API Google Gemini ([Dapatkan di Google AI Studio](https://aistudio.google.com/apikey))
+
+### Langkah-langkah:
+1. **Clone repository & masuk ke direktori**:
+   ```bash
+   git clone <URL_REPO_ANDA>
+   cd Panorama-Lens-Trip-Article-Tool
+   ```
+
+2. **Install dependensi**:
    ```bash
    npm install
    ```
 
-2. **Start the Development Server**
+3. **Jalankan dalam mode Development**:
    ```bash
    npm run dev
    ```
-
-3. **Access the App**
-   - **On your current device**: Open your browser and go to `http://localhost:3000`.
-   - **From another device (e.g., your phone)**: Find your computer's local IP address (e.g., `192.168.1.15`) and visit `http://<YOUR-IP>:3000`. Ensure both devices are connected to the same Wi-Fi network.
-
-*(Note: The first time you open the app, click the Settings button or wait a few seconds for the prompt to enter your Gemini API Key).*
+   Aplikasi akan aktif di:
+   - Frontend Vite: `http://localhost:3000` (atau IP lokal Anda di port 3000)
+   - Backend API: `http://localhost:3001`
 
 ---
 
-## 📦 How to Build (Production)
+## 🐳 Menjalankan dengan Docker
 
-If you want to bundle the frontend into static files (HTML, CSS, JS) that are highly optimized and minified, you can build the project.
+Untuk menjalankan secara instan di lingkungan container lokal:
 
-1. **Run the Build Command**
-   ```bash
-   npm run build
-   ```
-   This will compile the Vite frontend into a `dist/` directory.
+```bash
+# Menjalankan container di background
+docker compose up -d --build
 
-2. **Test the Production Build**
-   After building, you can serve both the Express backend and the bundled frontend simultaneously by simply starting the server:
-   ```bash
-   npm start
-   ```
-   The backend will now serve your static UI out of the `dist/` folder at `http://localhost:3001` (or whichever port is assigned).
+# Melihat log container
+docker compose logs -f
 
----
-
-## 🐳 How to Run (Docker Compose)
-
-The easiest way to run the application in a production-ready environment on your own server or VPS is using Docker Compose. A `Dockerfile` and `docker-compose.yml` are included in the repository.
-
-1. **Install Docker**
-   Ensure you have Docker and Docker Compose installed on your system.
-
-2. **Build and Start the Container**
-   Open your terminal in the project folder and run:
-   ```bash
-   docker-compose up -d --build
-   ```
-   This command will automatically:
-   - Build the optimized Vite frontend
-   - Install production-only Node dependencies
-   - Start the Express server
-   - Run everything in the background (`-d`)
-
-3. **Access the App**
-   The application will be running at `http://localhost:3001` (or `http://<YOUR-SERVER-IP>:3001`).
-
-4. **Stop the Container**
-   ```bash
-   docker-compose down
-   ```
+# Menghentikan container
+docker compose down
+```
+Aplikasi siap diakses di `http://localhost:3001`.
 
 ---
 
-## 🌐 How to Publish / Deploy
+## 🚢 Panduan Auto-Deploy ke Server VPS
 
-Because this application contains both a Frontend (Vite) and a Backend API (Express), it is best deployed as a single Node.js service. The backend server acts as a proxy to safely communicate with the Gemini API without exposing your network requests.
+Aplikasi ini dilengkapi alur deployment otomatis (**Local Build → Push Docker Hub → Pull & Run di VPS**):
 
-### Deploying to Render, Heroku, or DigitalOcean App Platform
-
-1. Commit your project to a GitHub repository.
-2. Connect the repository to your hosting provider (e.g., Render Web Service).
-3. **Build Command**: Set the build command to:
+1. **Siapkan berkas konfigurasi deploy**:
    ```bash
-   npm install && npm run build
+   cp .env.deploy.example .env.deploy
+   cp .env.production.example .env.production
    ```
-4. **Start Command**: Set the start command to:
-   ```bash
-   npm start
-   ```
-5. **Environment Variables**:
-   You do not strictly need to add the `PORT` environment variable as platforms usually inject this automatically, and `server.js` listens to `process.env.PORT`.
+   Isi IP VPS, username SSH, dan username Docker Hub di `.env.deploy`.
 
-Once deployed, the Node backend will serve your freshly built `dist/` folder to visitors while keeping your Express API routes (`/api/generate`) securely running on the same domain.
+2. **Login ke Docker Hub (Sekali Saja)**:
+   ```bash
+   docker login
+   ```
+
+3. **Eksekusi Auto-Deploy**:
+   - **Windows PowerShell**:
+     ```powershell
+     .\deploy.ps1
+     ```
+   - **Linux / WSL / macOS**:
+     ```bash
+     ./deploy.sh
+     ```
+
+Panduan lengkap instalasi VPS dari nol tersedia di [**`DEPLOY_GUIDE.md`**](file:///home/ramadhani/Panorama-Lens-Trip-Article-Tool/DEPLOY_GUIDE.md).
+
+---
+
+## 🔄 Backup & Sinkronisasi Data (Lokal <-> VPS)
+
+Anda dapat mentransfer seluruh database artikel dan gambar uploads kapan saja tanpa perlu deploy ulang:
+
+### Download/Backup Data VPS ke Komputer Lokal (Pull):
+```bash
+# Windows PowerShell
+.\sync-data.ps1 -Pull
+
+# Linux / WSL
+./sync-data.sh --pull
+```
+
+### Upload Data Lokal ke VPS (Push):
+```bash
+# Windows PowerShell
+.\sync-data.ps1 -Push
+
+# Linux / WSL
+./sync-data.sh --push
+```
+
+---
+
+## 🔒 Manajemen Kredensial & Autentikasi
+
+### Kredensial Default:
+- **Admin**: `admin` / Password default dapat diubah di menu Pengaturan.
+- **User**: `user` / Password default dapat diubah di menu Pengaturan.
+
+Kredensial production dapat dikonfigurasi melalui environment variables di `.env.production`:
+- `ADMIN_USERNAME` & `ADMIN_PASSWORD`
+- `USER_USERNAME` & `USER_PASSWORD`
+- `GEMINI_API_KEY`
+- `WP_URL`, `WP_USERNAME`, `WP_APPLICATION_PASSWORD`
+
+---
+
+## 📑 Dokumentasi Lengkap
+Pelajari dokumentasi teknis mendalam, skema REST API, arsitektur data, dan panduan penggunaan di [**`DOCUMENTATION.md`**](file:///home/ramadhani/Panorama-Lens-Trip-Article-Tool/DOCUMENTATION.md).
