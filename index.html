@@ -211,7 +211,14 @@
   </header>
 
   <!-- ═══ Main Content ═══ -->
-  <main class="app-main">
+<main class="app-main">
+  <nav class="mobile-writer-nav" id="mobileWriterNav">
+    <button class="mobile-tab-btn active" data-panel="input" id="btnTabInput">✍️ Compose</button>
+    <button class="mobile-tab-btn" data-panel="queue" id="btnTabQueue">📋 Queue <span class="count-badge" id="mobileQueueBadge">0</span></button>
+    <button class="mobile-tab-btn" data-panel="preview" id="btnTabPreview">👁️ Preview</button>
+  </nav>
+
+
     <!-- ── Left Panel: Input Form ── -->
     <section class="panel panel-input" id="inputPanel">
       <div class="panel-header">

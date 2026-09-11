@@ -137,6 +137,11 @@ function initDom() {
   dom.btnShowManager = $("#btnShowManager");
   dom.btnShowSchedule = $("#btnShowSchedule");
   dom.writerMain = $(".app-main");
+  dom.inputPanel = $("#inputPanel");
+  dom.queuePanel = $("#queuePanel");
+  dom.previewPanel = $("#previewPanel");
+  dom.mobileWriterNav = $("#mobileWriterNav");
+  dom.mobileQueueBadge = $("#mobileQueueBadge");
   dom.managerMain = $("#managerMain");
   dom.scheduleView = $("#scheduleMain");
 
@@ -477,6 +482,9 @@ function toggleAuthPasswordVisibility() {
 // ── View Management ──────────────────────────────────────────────
 function switchView(viewName) {
   state.currentView = viewName;
+  if (dom.mobileWriterNav) {
+    dom.mobileWriterNav.style.display = (viewName === "writer" && window.innerWidth <= 768) ? "flex" : "none";
+  }
   
   if (dom.writerMain) dom.writerMain.style.display = viewName === "writer" ? "grid" : "none";
   if (dom.managerMain) dom.managerMain.style.display = viewName === "manager" ? "block" : "none";
@@ -495,8 +503,52 @@ function switchView(viewName) {
 }
 
 // ── Initialization ───────────────────────────────────────────────
+
+// ⅜⅜⅜ Mobile Writer View Management ╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝╝
+function switchMobileWriterPanel(panelName) {
+  state.mobileActivePanel = panelName;
+
+  const panels = {
+    input: dom.inputPanel || document.getElementById("inputPanel"),
+    queue: dom.queuePanel || document.getElementById("queuePanel"),
+    preview: dom.previewPanel || document.getElementById("previewPanel")
+  };
+
+  Object.entries(panels).forEach(([name, el]) => {
+    if (el) {
+      if (name === panelName) {
+        el.classList.add("mobile-active-panel");
+      } else {
+        el.classList.remove("mobile-active-panel");
+      }
+    }
+  });
+
+  const buttons = document.querySelectorAll(".mobile-tab-btn");
+  buttons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.panel === panelName);
+  });
+}
+
+function initMobileWriterNav() {
+  const nav = document.getElementById("mobileWriterNav");
+  if (!nav) return;
+
+  const buttons = nav.querySelectorAll(".mobile-tab-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const panel = btn.dataset.panel;
+      switchMobileWriterPanel(panel);
+    });
+  });
+
+  switchMobileWriterPanel("input");
+}
+
+
 function init() {
   initDom();
+  initMobileWriterNav();
 
   if (dom.apiKeyInput) dom.apiKeyInput.value = state.apiKey;
   if (dom.openaiKeyInput) dom.openaiKeyInput.value = state.openaiApiKey;
@@ -934,6 +986,7 @@ function addToQueue() {
   clearForm();
   saveQueue();
   renderQueue();
+  if (window.innerWidth <= 768) switchMobileWriterPanel("queue");
   return item;
 }
 
@@ -1012,6 +1065,7 @@ function selectQueueItem(id) {
   state.activeItemId = id;
   renderQueue();
   renderPreview();
+  if (window.innerWidth <= 768) switchMobileWriterPanel("preview");
 }
 
 function findArticleById(id) {
@@ -1571,6 +1625,7 @@ async function regenerateQueueItem(id) {
   }
   showToast(`Regenerating "${item.title}"...`, "info");
 
+  if (window.innerWidth <= 768) switchMobileWriterPanel("preview");
   await generateArticle(item);
 }
 

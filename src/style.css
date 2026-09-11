@@ -2404,3 +2404,864 @@ select option {
     grid-template-columns: 1fr;
   }
 }
+/* =======================================================================
+   ENHANCED RESPONSIVE DESIGN FOR MOBILE (PHONE) & TABLET
+   ======================================================================= */
+
+@media (max-width: 768px) {
+  /* Input ergonomics & prevent iOS zoom */
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="url"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* Compact button min height */
+  .btn {
+    min-height: 40px;
+    padding: 0.5rem 0.85rem;
+  }
+
+  /* Mode Switcher grid for mobile */
+  .mode-switcher {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.35rem !important;
+    background: var(--bg-surface) !important;
+    padding: 0.35rem !important;
+  }
+
+  .mode-btn {
+    padding: 0.55rem 0.4rem !important;
+    font-size: 0.75rem !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  /* Quotation and dynamic rows */
+  .quotation-item {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.4rem !important;
+    background: var(--bg-surface) !important;
+    padding: 0.75rem !important;
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--border-subtle) !important;
+    position: relative !important;
+  }
+
+  .quotation-item .btn-remove-row {
+    align-self: flex-end !important;
+    margin-top: -0.25rem !important;
+  }
+
+  .article-image-item .img-preview-box {
+    width: 100% !important;
+    height: 120px !important;
+    max-height: 140px !important;
+  }
+
+  .internal-link-item,
+  .insert-link-item {
+    padding: 0.75rem !important;
+  }
+
+  /* App Header Responsive */
+  .app-header {
+    flex-wrap: wrap !important;
+    gap: 0.5rem 0.75rem !important;
+    padding: 0.6rem 0.75rem !important;
+  }
+
+  .header-left {
+    order: 1;
+    gap: 0.5rem !important;
+  }
+
+  .header-right {
+    order: 2;
+    margin-left: auto;
+    gap: 0.35rem !important;
+  }
+
+  .header-center {
+    order: 3;
+    width: 100% !important;
+    justify-content: stretch !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .view-nav {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 0.25rem !important;
+    padding: 0.2rem !important;
+  }
+
+  .nav-btn {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 0.45rem 0.25rem !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
+  }
+
+  .user-profile-badge {
+    padding: 0.25rem 0.5rem !important;
+    margin-right: 0 !important;
+  }
+
+  .user-info-text {
+    display: none !important;
+  }
+
+  /* Mobile Writer Nav Tabs */
+  .mobile-writer-nav {
+    display: flex !important;
+    position: sticky !important;
+    top: 57px !important;
+    z-index: 90 !important;
+    background: var(--bg-header) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    padding: 0.4rem 0.75rem !important;
+    gap: 0.35rem !important;
+  }
+
+  .mobile-tab-btn {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    padding: 0.5rem 0.25rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: var(--text-muted) !important;
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-sm) !important;
+    cursor: pointer !important;
+    transition: all var(--duration-fast) ease !important;
+  }
+
+  .mobile-tab-btn:hover {
+    color: var(--text-primary) !important;
+  }
+
+  .mobile-tab-btn.active {
+    background: var(--accent-gradient) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3) !important;
+  }
+
+  .mobile-tab-btn .count-badge {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    font-size: 0.68rem !important;
+    padding: 0 0.35rem !important;
+    border-radius: 9999px !important;
+  }
+
+  /* Panels behavior on Phone */
+  .app-main:not([style*="display: none"]) {
+    display: block !important;
+    height: auto !important;
+    min-height: calc(100vh - 110px) !important;
+    padding: 0 !important;
+  }
+
+  .app-main > .panel {
+    display: none;
+    border: none !important;
+    height: auto !important;
+    min-height: calc(100vh - 120px) !important;
+  }
+
+  .app-main > .panel.mobile-active-panel {
+    display: flex !important;
+  }
+
+  /* Preview actions */
+  .panel-header {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .panel-actions {
+    flex-wrap: wrap !important;
+    gap: 0.35rem !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .preview-tabs {
+    flex-shrink: 0 !important;
+  }
+
+  .preview-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    padding: 0.6rem !important;
+  }
+
+  .preview-content {
+    padding: 0.75rem 0.25rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Auth Gateway */
+  .auth-gateway-overlay {
+    padding: 0.75rem !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .auth-card {
+    max-height: calc(100vh - 1.5rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: auto 0 !important;
+  }
+
+  .auth-card-header {
+    padding: 1rem 1.25rem !important;
+  }
+
+  .auth-card-body {
+    padding: 1.25rem !important;
+    overflow-y: auto !important;
+  }
+
+  .auth-quick-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Modals */
+  .modal-overlay {
+    padding: 0.5rem !important;
+    align-items: flex-end !important;
+  }
+
+  .modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    max-height: 92vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .modal-header {
+    padding: 1rem 1.25rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .modal-body {
+    padding: 1rem 1.25rem !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex: 1 1 auto !important;
+  }
+
+  .modal-footer {
+    padding: 0.75rem 1.25rem !important;
+    flex-shrink: 0 !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  .modal-footer .btn {
+    flex: 1 1 auto !important;
+  }
+
+  /* Article Manager */
+  .app-main-manager {
+    padding: 0.75rem !important;
+  }
+
+  .manager-controls-card {
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+
+  .section-title {
+    font-size: 1.1rem !important;
+  }
+
+  .section-subtitle {
+    font-size: 0.75rem !important;
+  }
+
+  .controls-right {
+    gap: 0.5rem !important;
+  }
+
+  .controls-right .btn,
+  .controls-right label.btn {
+    flex: 1 1 calc(50% - 0.25rem) !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    padding: 0.5rem !important;
+  }
+
+  .manager-container {
+    gap: 0.75rem !important;
+  }
+
+  .filter-search-bar {
+    gap: 0.4rem !important;
+    margin: 0 !important;
+  }
+
+  .search-box {
+    width: 100% !important;
+    margin: 0 !important;
+    flex-basis: auto !important;
+    height: auto !important;
+  }
+
+  .search-box input {
+    width: 100% !important;
+    padding: 0.4rem 0.75rem !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  .articles-table-wrapper {
+    min-height: auto !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .filter-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+  }
+
+  .filter-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .filter-btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .articles-table tr {
+    padding: 1rem !important;
+    margin-bottom: 0.85rem !important;
+  }
+
+  .articles-table td {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    gap: 0.25rem !important;
+    padding: 0.5rem 0 !important;
+  }
+
+  .articles-table td::before {
+    font-size: 0.7rem !important;
+    color: var(--accent-text) !important;
+    font-weight: 700 !important;
+  }
+
+  .articles-table td > strong,
+  .articles-table td > code,
+  .articles-table td > span,
+  .articles-table td > a,
+  .articles-table td > div {
+    max-width: 100% !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+
+  .articles-table td:last-child .action-buttons {
+    width: 100% !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    margin-top: 0.35rem !important;
+  }
+
+  .btn-table-compose {
+    flex: 2 !important;
+    padding: 0.5rem !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .articles-table td:last-child .action-buttons .btn {
+    flex: 1 !important;
+    padding: 0.5rem !important;
+  }
+
+  /* Calendar Schedule */
+  .app-main-schedule {
+    padding: 0.75rem !important;
+  }
+
+  .schedule-header-bar {
+    padding: 0.85rem !important;
+    gap: 0.75rem !important;
+  }
+
+  .schedule-nav-controls {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  .schedule-nav-controls .btn {
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .schedule-month-title {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+    text-align: center !important;
+    order: -1 !important;
+    margin: 0 0 0.25rem 0 !important;
+    color: var(--text-primary) !important;
+    display: block !important;
+  }
+
+  .schedule-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  .schedule-legend {
+    justify-content: center !important;
+  }
+
+  .schedule-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .calendar-grid-header {
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0 !important;
+  }
+
+  .calendar-grid-body {
+    grid-auto-rows: minmax(62px, auto) !important;
+  }
+
+  .calendar-day-cell {
+    min-height: 62px !important;
+    padding: 0.25rem !important;
+  }
+
+  .calendar-day-number {
+    font-size: 0.72rem !important;
+  }
+
+  .calendar-day-cell.today .calendar-day-number {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .activity-badge {
+    padding: 0.15rem 0.3rem !important;
+    font-size: 0.62rem !important;
+    gap: 0.2rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .day-activity-card {
+    padding: 0.85rem !important;
+  }
+
+  .day-activity-header {
+    flex-direction: column !important;
+    gap: 0.35rem !important;
+  }
+
+  .day-activity-actions {
+    flex-wrap: wrap !important;
+  }
+
+  .day-activity-actions .btn {
+    flex: 1 1 calc(50% - 0.25rem) !important;
+  }
+
+  .toast-container {
+    bottom: 1rem !important;
+    right: 1rem !important;
+    left: 1rem !important;
+  }
+
+  .toast {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* Tablet Optimizations (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .mobile-writer-nav {
+    display: none !important;
+  }
+
+  .app-header {
+    padding: 0.75rem 1.25rem !important;
+  }
+
+  .app-main:not([style*="display: none"]) {
+    display: grid !important;
+    grid-template-columns: 320px 1fr !important;
+    grid-template-rows: auto 1fr !important;
+    grid-template-areas: 
+      "queue queue"
+      "input preview" !important;
+    height: calc(100vh - 65px) !important;
+  }
+
+  .panel-queue {
+    grid-area: queue !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    max-height: 180px !important;
+  }
+
+  .panel-input {
+    grid-area: input !important;
+    border-right: 1px solid var(--border-subtle) !important;
+    overflow-y: auto !important;
+  }
+
+  .panel-preview {
+    grid-area: preview !important;
+    overflow-y: auto !important;
+  }
+
+  .panel-queue .panel-body {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+
+  .panel-queue .queue-item {
+    min-width: 250px !important;
+    max-width: 280px !important;
+    flex-shrink: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .app-main-manager {
+    padding: 1.25rem !important;
+  }
+
+  .app-main-schedule {
+    padding: 1.25rem !important;
+  }
+
+  .calendar-day-cell {
+    min-height: 90px !important;
+  }
+}
+
+/* Desktop default for mobile-writer-nav */
+@media (min-width: 769px) {
+  .mobile-writer-nav {
+    display: none !important;
+  }
+  .app-main > .panel {
+    display: flex !important;
+  }
+}
+
+/* ======================================================================
+   QUEUE PANEL ENHANCED RESPONSIVENESS
+   ====================================================================== */
+
+/*Base Queue Improvements */
+.panel-queue .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.panel-queue .panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.queue-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.queue-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.queue-item-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.queue-item-status {
+  flex-shrink: 0;
+}
+
+.queue-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+}
+
+.queue-item-meta > span {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.queue-item-actions .btn {
+  white-space: nowrap;
+}
+
+/* Tablet Optimizations (769px to 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .panel-queue {
+    max-height: 220px !important;
+  }
+
+
+  .panel-queue .panel-body {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .panel-queue .queue-item {
+    min-width: 270px !important;
+    max-width: 320px !important;
+    flex: 0 0 280px !important;
+    height: auto !important;
+    margin-bottom: 0 !important;
+    scroll-snap-align: start;
+    justify-content: space-between;
+  }
+
+  .panel-queue .empty-state {
+    flex-direction: row !important;
+    padding: 1rem 1.5rem !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+}
+
+/* Mobile Optimizations (<= 768px) */
+@media (max-width: 768px) {
+  /* On mobile writer segmented tab, panel-queue takes full vertical area */
+  .app-main > .panel-queue.mobile-active-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    min-height: calc(100vh - 110px) !important;
+    overflow-y: visible !important;
+  }
+
+  .panel-queue .panel-header {
+    padding: 0.75rem 1rem !important;
+    background: var(--bg-surface) !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    position: relative !important;
+    top: auto !important;
+    z-index: 1 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .panel-queue .panel-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+    margin-top: 0.25rem !important;
+  }
+
+  .panel-queue .panel-actions .btn {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .panel-queue .panel-body {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+    max-height: none !important;
+    flex: 1 1 auto !important;
+  }
+
+  .panel-queue .queue-item {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-bottom: 0 !important;
+    padding: 0.85rem 1rem !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .queue-item-title {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+  }
+
+  .queue-item-meta {
+    font-size: 0.75rem !important;
+    margin: 0.4rem 0 0.6rem 0 !important;
+  }
+
+  .queue-item-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem !important;
+    margin-top: 0.6rem !important;
+  }
+
+  .queue-item-actions .btn-xs {
+    width: 100% !important;
+    min-height: 36px !important;
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .panel-queue .empty-state {
+    padding: 2.5rem 1rem !important;
+    text-align: center !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    margin: auto 0 !important;
+  }
+
+  .panel-queue .empty-state .empty-icon {
+    font-size: 2.5rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+}
+
+
+
+/*
+   View Container Visibility Gaurantee
+   */
+.app-main[style*="display: none"],
+.app-main-manager[style*="display: none"],
+.app-main-schedule[style*="display: none"] {
+  display: none !important;
+}
+
+.app-main-manager:not([style*="display: none"]) {
+  display: flex !important;
+}
+
+.app-main-schedule:not([style*="display: none"]) {
+  display: block !important;
+}
+
+
+
+/* Mobile Writer Nav only visible when Writer Main is active */
+.mobile-writer-nav {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .app-main:not([style*="display: none"]) ~ .mobile-writer-nav,
+  .app-main:not([style*="display: none"]) > .mobile-writer-nav {
+    display: flex !important;
+  }
+  
+  .app-main-manager:not([style*="display: none"]) ~ .mobile-writer-nav,
+  .app-main-schedule:not([style*="display: none"]) ~ .mobile-writer-nav {
+    display: none !important;
+  }
+}
