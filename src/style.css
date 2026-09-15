@@ -2286,69 +2286,6 @@ select option {
   gap: 0.5rem;
 }
 
-/* Quick Fill Demo Grid */
-.auth-quick-section {
-  margin-top: 1.75rem;
-  padding-top: 1.25rem;
-  border-top: 1px dashed var(--border-default);
-}
-
-.auth-quick-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
-}
-
-.auth-quick-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.auth-demo-card {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.65rem 0.75rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  text-align: left;
-  transition: all var(--transition-fast);
-}
-
-.auth-demo-card:hover {
-  background: var(--bg-surface-hover);
-  border-color: var(--border-accent);
-  transform: translateY(-1px);
-}
-
-.auth-demo-icon {
-  font-size: 1.25rem;
-}
-
-.auth-demo-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.auth-demo-role {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.auth-demo-creds {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
 /* ── User Profile Header Badge ───────────────────────────────── */
 .user-profile-badge {
   display: flex;
@@ -2399,9 +2336,6 @@ select option {
 @media (max-width: 768px) {
   .hide-mobile {
     display: none;
-  }
-  .auth-quick-grid {
-    grid-template-columns: 1fr;
   }
 }
 /* =======================================================================
@@ -2645,13 +2579,7 @@ select option {
     padding: 1.25rem !important;
     overflow-y: auto !important;
   }
-
-  .auth-quick-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.5rem !important;
-  }
-
-  /* Modals */
+/* Modals */
   .modal-overlay {
     padding: 0.5rem !important;
     align-items: flex-end !important;

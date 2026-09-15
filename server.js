@@ -2134,6 +2134,9 @@ app.post('/api/articles/import-csv', (req, res) => {
   if (!csvContent) {
     return res.status(400).json({ error: 'CSV content is empty' });
   }
+
+  // Strip UTF-8 BOM if present
+  csvContent = csvContent.replace(/^\uFEFF/, '');
   
   const lines = csvContent.split(/\r?\n/);
   const items = getManagerItems();
@@ -2157,8 +2160,6 @@ app.post('/api/articles/import-csv', (req, res) => {
     const pageRole = cols[0] || '';
     const topic = cols[3] || '';
     const intent = cols[4] || '';
-    const link = cols[5] || '';
-    const status = (link && link.startsWith('http')) ? 'telah_dibuat' : 'belum_dibuat';
     
     const existingIndex = items.findIndex(item => 
       (keyphrase && item.keyphrase.toLowerCase() === keyphrase.toLowerCase()) ||
@@ -2170,12 +2171,15 @@ app.post('/api/articles/import-csv', (req, res) => {
       existing.pageRole = pageRole || existing.pageRole;
       existing.topic = topic || existing.topic;
       existing.intent = intent || existing.intent;
-      if (link) {
-        existing.link = link;
-        existing.status = 'telah_dibuat';
+      // Jangan isi link dari CSV karena artikel masih rencana (belum dibuat).
+      // Hanya pertahankan link jika artikel sudah pernah dibuat/terhubung dengan WordPress.
+      if (!existing.wpPostId) {
+        existing.link = '';
+        existing.status = 'belum_dibuat';
       }
       updatedCount++;
     } else {
+      // Artikel baru dari CSV adalah rencana konten: final URL kosong dan status belum_dibuat
       items.push({
         id: nextId++,
         pageRole,
@@ -2183,8 +2187,8 @@ app.post('/api/articles/import-csv', (req, res) => {
         title,
         topic,
         intent,
-        link,
-        status
+        link: '',
+        status: 'belum_dibuat'
       });
       addedCount++;
     }

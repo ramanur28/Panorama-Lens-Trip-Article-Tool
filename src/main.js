@@ -124,8 +124,6 @@ function initDom() {
   dom.authBtnText = $("#authBtnText");
   dom.authAlert = $("#authAlert");
   dom.authThemeToggle = $("#authThemeToggle");
-  dom.quickLoginAdmin = $("#quickLoginAdmin");
-  dom.quickLoginUser = $("#quickLoginUser");
   dom.userProfileBadge = $("#userProfileBadge");
   dom.userAvatar = $("#userAvatar");
   dom.userHeaderName = $("#userHeaderName");
@@ -222,6 +220,25 @@ function initDom() {
   dom.txtSearchManager = $("#txtSearchManager");
   dom.managerFilterTabs = $$("#managerFilters .filter-btn");
   dom.btnOpenAddModal = $("#btnOpenAddModal");
+  dom.fileCsvInput = $("#fileCsvInput");
+  dom.btnImportDefaultCSV = $("#btnImportDefaultCSV");
+
+  // Article Add/Edit Modal
+  dom.articleModal = $("#articleModal");
+  dom.articleModalTitle = $("#articleModalTitle");
+  dom.closeArticleModal = $("#closeArticleModal");
+  dom.btnCancelArticleModal = $("#btnCancelArticleModal");
+  dom.btnSaveArticleModal = $("#btnSaveArticleModal");
+  dom.editArticleId = $("#editArticleId");
+  dom.artPageRoleInput = $("#artPageRoleInput");
+  dom.artIntentInput = $("#artIntentInput");
+  dom.artKeyphraseInput = $("#artKeyphraseInput");
+  dom.artTitleInput = $("#artTitleInput");
+  dom.artTopicInput = $("#artTopicInput");
+  dom.artLinkInput = $("#artLinkInput");
+  dom.artScheduledDateInput = $("#artScheduledDateInput");
+  dom.artScheduledTimeInput = $("#artScheduledTimeInput");
+  dom.artStatusSelect = $("#artStatusSelect");
 
   // Manager Filter Count Badges
   dom.badgeAll = $("#badgeAll");
@@ -577,20 +594,6 @@ function init() {
   if (dom.toggleAuthPasswordVisibility) dom.toggleAuthPasswordVisibility.addEventListener("click", toggleAuthPasswordVisibility);
   if (dom.authThemeToggle) dom.authThemeToggle.addEventListener("click", toggleTheme);
 
-  if (dom.quickLoginAdmin) {
-    dom.quickLoginAdmin.addEventListener("click", () => {
-      if (dom.authUsernameInput) dom.authUsernameInput.value = "admin";
-      if (dom.authPasswordInput) dom.authPasswordInput.value = "admin123";
-      handleLogin();
-    });
-  }
-  if (dom.quickLoginUser) {
-    dom.quickLoginUser.addEventListener("click", () => {
-      if (dom.authUsernameInput) dom.authUsernameInput.value = "user";
-      if (dom.authPasswordInput) dom.authPasswordInput.value = "user123";
-      handleLogin();
-    });
-  }
 
   // Form mode handlers
   if (dom.modeComposeBtn) dom.modeComposeBtn.addEventListener("click", () => switchMode("compose"));
@@ -673,6 +676,18 @@ function init() {
     });
   }
   if (dom.btnOpenAddModal) dom.btnOpenAddModal.addEventListener("click", openAddArticleModal);
+  if (dom.fileCsvInput) dom.fileCsvInput.addEventListener("change", handleCsvUpload);
+  if (dom.btnImportDefaultCSV) dom.btnImportDefaultCSV.addEventListener("click", handleImportDefaultCsv);
+
+  // Article Modal Handlers
+  if (dom.closeArticleModal) dom.closeArticleModal.addEventListener("click", closeArticleModal);
+  if (dom.btnCancelArticleModal) dom.btnCancelArticleModal.addEventListener("click", closeArticleModal);
+  if (dom.btnSaveArticleModal) dom.btnSaveArticleModal.addEventListener("click", saveArticleModalHandler);
+  if (dom.articleModal) {
+    dom.articleModal.addEventListener("click", (e) => {
+      if (e.target === dom.articleModal) closeArticleModal();
+    });
+  }
 
   // Calendar Controls
   if (dom.btnPrevMonth) dom.btnPrevMonth.addEventListener("click", () => {
@@ -2243,28 +2258,178 @@ function composeArticleFromItem(item) {
 }
 
 function openAddArticleModal() {
-  openEditArticleModal({
-    id: null,
-    title: "",
-    keyphrase: "",
-    topic: "",
-    pageRole: "Sub-page",
-    intent: "Informational",
-    status: "belum_dibuat",
-    link: ""
-  });
+  if (!dom.articleModal) return;
+  state.editingArticleItem = null;
+  if (dom.articleModalTitle) dom.articleModalTitle.textContent = "Add Article";
+  if (dom.editArticleId) dom.editArticleId.value = "";
+  if (dom.artPageRoleInput) dom.artPageRoleInput.value = "Sub-page";
+  if (dom.artIntentInput) dom.artIntentInput.value = "Informational";
+  if (dom.artKeyphraseInput) dom.artKeyphraseInput.value = "";
+  if (dom.artTitleInput) dom.artTitleInput.value = "";
+  if (dom.artTopicInput) dom.artTopicInput.value = "";
+  if (dom.artLinkInput) dom.artLinkInput.value = "";
+  if (dom.artScheduledDateInput) dom.artScheduledDateInput.value = "";
+  if (dom.artScheduledTimeInput) dom.artScheduledTimeInput.value = "09:00";
+  if (dom.artStatusSelect) dom.artStatusSelect.value = "belum_dibuat";
+  dom.articleModal.classList.add("active");
 }
 
 function openEditArticleModal(item) {
+  if (!dom.articleModal) return;
   state.editingArticleItem = item;
-  const newTitle = prompt("Enter Article Title:", item.title || "");
-  if (newTitle === null) return;
-  const newKeyphrase = prompt("Enter Focus Keyphrase:", item.keyphrase || "");
-  if (newKeyphrase === null) return;
-  
-  item.title = newTitle.trim();
-  item.keyphrase = newKeyphrase.trim();
-  saveArticleItem(item);
+  if (dom.articleModalTitle) dom.articleModalTitle.textContent = "Edit Article";
+  if (dom.editArticleId) dom.editArticleId.value = item && item.id != null ? item.id : "";
+  if (dom.artPageRoleInput) dom.artPageRoleInput.value = (item && item.pageRole) || "";
+  if (dom.artIntentInput) dom.artIntentInput.value = (item && item.intent) || "";
+  if (dom.artKeyphraseInput) dom.artKeyphraseInput.value = (item && item.keyphrase) || "";
+  if (dom.artTitleInput) dom.artTitleInput.value = (item && item.title) || "";
+  if (dom.artTopicInput) dom.artTopicInput.value = (item && item.topic) || "";
+  if (dom.artLinkInput) dom.artLinkInput.value = (item && item.link) || "";
+  if (dom.artStatusSelect) dom.artStatusSelect.value = (item && item.status) || "belum_dibuat";
+
+  let dateVal = "";
+  let timeVal = "09:00";
+  if (item && item.scheduledDate) {
+    if (item.scheduledDate.includes("T")) {
+      const parts = item.scheduledDate.split("T");
+      dateVal = parts[0] || "";
+      timeVal = (parts[1] || "").substring(0, 5) || "09:00";
+    } else if (item.scheduledDate.includes(" ")) {
+      const parts = item.scheduledDate.split(" ");
+      dateVal = parts[0] || "";
+      timeVal = (parts[1] || "").substring(0, 5) || "09:00";
+    } else {
+      dateVal = item.scheduledDate;
+    }
+  }
+  if (dom.artScheduledDateInput) dom.artScheduledDateInput.value = dateVal;
+  if (dom.artScheduledTimeInput) dom.artScheduledTimeInput.value = timeVal;
+
+  dom.articleModal.classList.add("active");
+}
+
+function closeArticleModal() {
+  if (dom.articleModal) dom.articleModal.classList.remove("active");
+}
+
+async function saveArticleModalHandler() {
+  const title = dom.artTitleInput ? dom.artTitleInput.value.trim() : "";
+  const keyphrase = dom.artKeyphraseInput ? dom.artKeyphraseInput.value.trim() : "";
+
+  if (!title && !keyphrase) {
+    showToast("Title or Focus Keyphrase is required.", "error");
+    return;
+  }
+
+  const idStr = dom.editArticleId ? dom.editArticleId.value.trim() : "";
+  const pageRole = dom.artPageRoleInput ? dom.artPageRoleInput.value.trim() : "";
+  const intent = dom.artIntentInput ? dom.artIntentInput.value.trim() : "";
+  const topic = dom.artTopicInput ? dom.artTopicInput.value.trim() : "";
+  const link = dom.artLinkInput ? dom.artLinkInput.value.trim() : "";
+  const status = dom.artStatusSelect ? dom.artStatusSelect.value : "belum_dibuat";
+
+  const dateVal = dom.artScheduledDateInput ? dom.artScheduledDateInput.value : "";
+  const timeVal = dom.artScheduledTimeInput ? dom.artScheduledTimeInput.value || "09:00" : "09:00";
+  const scheduledDate = dateVal ? `${dateVal}T${timeVal}` : null;
+
+  const payload = {
+    pageRole,
+    intent,
+    keyphrase,
+    title,
+    topic,
+    link,
+    status,
+    scheduledDate
+  };
+
+  if (idStr) {
+    payload.id = parseInt(idStr, 10);
+  }
+
+  try {
+    const res = await authFetch(apiPath("/api/articles"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (res.ok && (data.success || data.item)) {
+      showToast(idStr ? "Article updated successfully." : "Article added successfully.", "success");
+      closeArticleModal();
+      await loadArticles();
+      if (typeof renderCalendar === "function") renderCalendar();
+    } else {
+      showToast(`Failed to save article: ${data.error || "Unknown error"}`, "error");
+    }
+  } catch (err) {
+    console.error("Failed to save article:", err);
+    showToast(`Error saving article: ${err.message}`, "error");
+  }
+}
+
+async function handleCsvUpload(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const fileName = file.name;
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    const fileContent = evt.target.result;
+    if (!fileContent || !fileContent.trim()) {
+      showToast("Selected CSV file is empty.", "error");
+      if (dom.fileCsvInput) dom.fileCsvInput.value = "";
+      return;
+    }
+    showToast(`Importing ${fileName}...`, "info");
+    try {
+      const res = await authFetch(apiPath("/api/articles/import-csv"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileContent })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`CSV imported: +${data.addedCount} new, ${data.updatedCount} updated. Total: ${data.totalCount} articles.`, "success");
+        await loadArticles();
+        if (typeof renderCalendar === "function") renderCalendar();
+      } else {
+        showToast(`CSV import failed: ${data.error || "Unknown error"}`, "error");
+      }
+    } catch (err) {
+      console.error("CSV import error:", err);
+      showToast(`CSV import error: ${err.message}`, "error");
+    } finally {
+      if (dom.fileCsvInput) dom.fileCsvInput.value = "";
+    }
+  };
+  reader.onerror = () => {
+    showToast("Failed to read CSV file.", "error");
+    if (dom.fileCsvInput) dom.fileCsvInput.value = "";
+  };
+  reader.readAsText(file);
+}
+
+async function handleImportDefaultCsv() {
+  showToast("Importing default CSV from server...", "info");
+  try {
+    const res = await authFetch(apiPath("/api/articles/import-csv"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ useDefault: true })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(`Default CSV imported: +${data.addedCount} new, ${data.updatedCount} updated. Total: ${data.totalCount} articles.`, "success");
+      await loadArticles();
+      if (typeof renderCalendar === "function") renderCalendar();
+    } else {
+      showToast(data.error || "Default CSV file not found on server. Please use 'Upload CSV' instead.", "warning");
+    }
+  } catch (err) {
+    console.error("Default CSV import error:", err);
+    showToast(`Default CSV import error: ${err.message}`, "error");
+  }
 }
 
 async function saveArticleItem(item) {
