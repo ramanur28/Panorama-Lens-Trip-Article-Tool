@@ -1,19 +1,113 @@
-node_modules
-npm-debug.log
+# =================================================================
+# 1. VERSION CONTROL
+# =================================================================
 .git
 .gitignore
+.gitattributes
+.github
+
+# =================================================================
+# 2. ENVIRONMENT FILES & SECRETS
+# =================================================================
 .env
 .env.*
-!.env.example
-!.env.production.example
-!.env.deploy.example
-data
+.env*.local
+*.pem
+*.key
+*.pub
+*.crt
+*.cer
+*.cert
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+.ssh
+secrets
+credentials.json
+client_secret*.json
+
+# =================================================================
+# 3. NODE DEPENDENCIES & BUILD ARTIFACTS
+# =================================================================
+# Prevent host node_modules from overwriting container install
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Stale local build outputs (built fresh inside Docker)
 dist
-logs
-*.log
+dist-ssr
+build
+.cache
+.parcel-cache
+
+# =================================================================
+# 4. RUNTIME DATA & PERSISTENT VOLUMES
+# =================================================================
+# Volume mounted at runtime (- ./data:/app/data)
+data
+backups
+uploads
+
+# =================================================================
+# 5. PHP APPLICATION (SHARED HOSTING ONLY, NOT PART OF NODE CONTAINER)
+# =================================================================
+php-version
+
+# =================================================================
+# 6. ARCHIVES, BACKUPS & DATABASE DUMPS
+# =================================================================
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+panorama-article-tool-cpanel.zip
+
+# =================================================================
+# 7. DEPLOYMENT SCRIPTS, DOCKER CONFIGS & DOCUMENTATION
+# =================================================================
 deploy.sh
 deploy.ps1
 setup-vps.sh
+sync-data.sh
+sync-data.ps1
+docker-compose*.yml
+Dockerfile*
+*.md
 DEPLOY_GUIDE.md
+DOCUMENTATION.md
+README.md
+
+# =================================================================
+# 8. LOGS & TEMPORARY FILES
+# =================================================================
+logs
+*.log
+temp
+tmp
+
+# =================================================================
+# 9. IDE, EDITOR & OS METADATA
+# =================================================================
 .vscode
 .idea
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+Thumbs.db
+desktop.ini

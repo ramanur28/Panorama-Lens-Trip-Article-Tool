@@ -1,0 +1,914 @@
+<?php
+/**
+ * Panorama Lens Trip - Article Tool (PHP Shared Hosting Edition)
+ */
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/includes/db.php';
+
+// Auto-check database connectivity
+$dbError = null;
+try {
+    Database::getConnection();
+} catch (Exception $e) {
+    $dbError = $e->getMessage();
+}
+?>
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Generate high-quality, SEO-optimized articles with 2000+ words using Gemini AI. Batch generate multiple articles with customizable tone and style." />
+  <title>Panorama Lens Trip Article Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <!-- ═══ Full Screen Authentication Gateway ═══ -->
+  <div id="authGateway" class="auth-gateway-overlay">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="auth-brand">
+          <div class="auth-logo-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="url(#authLogoGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <defs><linearGradient id="authLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="auth-title">Panorama Lens Trip</h1>
+            <p class="auth-subtitle">Article Generator & Manager Tool</p>
+          </div>
+        </div>
+        <button class="btn-icon auth-theme-toggle" id="authThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
+          <svg class="auth-theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="auth-theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+
+      <div class="auth-card-body">
+        <div class="auth-welcome">
+          <h2>Welcome Back</h2>
+          <p>Please enter your credentials to access the workspace.</p>
+        </div>
+
+        <div id="authAlert" class="auth-alert" style="display: none;"></div>
+
+        <form id="authForm" autocomplete="on">
+          <div class="form-group">
+            <label for="authUsernameInput">Username</label>
+            <div class="input-with-action">
+              <input type="text" id="authUsernameInput" placeholder="Enter username (e.g. admin or user)" required autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="authPasswordInput">Password</label>
+            <div class="input-with-action">
+              <input type="password" id="authPasswordInput" placeholder="Enter password" required autocomplete="current-password" />
+              <button type="button" class="btn-icon" id="toggleAuthPasswordVisibility" title="Toggle password visibility" tabindex="-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit-btn" id="authSubmitBtn">
+            <span id="authBtnSpinner" class="auth-btn-spinner" style="display: none; margin-right: 6px;">⏳</span>
+            <span id="authBtnText">Sign In to Workspace</span>
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="appContainer" style="display: none; flex-direction: column; min-height: 100vh;">
+  
+  <!-- ═══ Profile & Credentials Modal ═══ -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>👤 Account Profile & Credentials</h2>
+        <button class="modal-close" id="closeProfileModal" aria-label="Close profile">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="profileAlert" class="auth-alert" style="display: none; margin-bottom: 1rem;"></div>
+        <form id="profileForm" autocomplete="off">
+          <div class="form-group">
+            <label for="profileUsernameInput">Username</label>
+            <input type="text" id="profileUsernameInput" placeholder="Enter username" required autocomplete="username" />
+            <p class="form-hint">Used to login to this workspace.</p>
+          </div>
+          <div class="form-group">
+            <label for="profileNameInput">Full Name / Display Name</label>
+            <input type="text" id="profileNameInput" placeholder="e.g. Administrator" />
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.25rem 0;" />
+          <div class="form-group">
+            <label for="profileOldPasswordInput">Current Password <span style="color: var(--color-danger, #ef4444);">*</span></label>
+            <input type="password" id="profileOldPasswordInput" placeholder="Enter current password to verify identity" required autocomplete="current-password" />
+          </div>
+          <div class="form-group">
+            <label for="profileNewPasswordInput">New Password <span class="optional">(leave blank to keep current)</span></label>
+            <input type="password" id="profileNewPasswordInput" placeholder="Enter new password (min. 4 characters)" autocomplete="new-password" />
+          </div>
+          <div class="form-group">
+            <label for="profileConfirmPasswordInput">Confirm New Password</label>
+            <input type="password" id="profileConfirmPasswordInput" placeholder="Repeat new password" autocomplete="new-password" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" id="cancelProfileBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveProfileBtn">Save Credentials</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Settings Modal ═══ -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>⚙️ Admin Workspace Settings</h2>
+        <button class="modal-close" id="closeSettings" aria-label="Close settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="apiKeyInput">Gemini API Key</label>
+          <div class="input-with-action">
+            <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API key here..." autocomplete="off" />
+            <button class="btn-icon" id="toggleKeyVisibility" title="Toggle visibility">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="form-hint">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Configured by Administrator and shared across all workspace users.</p>
+        </div>
+        <div class="form-group">
+          <label for="openaiKeyInput">OpenAI API Key (Optional)</label>
+          <div class="input-with-action">
+            <input type="password" id="openaiKeyInput" placeholder="Paste your OpenAI API key here..." autocomplete="off" />
+            <button class="btn-icon" id="toggleOpenaiKeyVisibility" title="Toggle visibility">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <p class="form-hint">Required for ChatGPT models. Stored locally in your browser.</p>
+        </div>
+        <div class="form-group">
+          <label for="modelSelect">Default Model</label>
+          <select id="modelSelect">
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash (Fast)</option>
+            <option value="gemini-3.5-pro">Gemini 3.5 Pro (Quality)</option>
+            <option value="gpt-5.4-mini">GPT-5.4 Mini</option>
+            <option value="gpt-5.6-luna">GPT-5.6 Luna</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+            <option value="custom">Other / Custom Model ID...</option>
+          </select>
+        </div>
+        <div class="form-group" id="customModelGroup" style="display: none; margin-top: 0.75rem;">
+          <label for="customModelInput">Custom Model ID</label>
+          <input type="text" id="customModelInput" placeholder="e.g. gemini-2.5-tuned-model" />
+        </div>
+
+        <fieldset style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-top: 1.25rem; background: rgba(99,102,241,0.03);">
+          <legend style="font-weight: 700; font-size: 0.85rem; color: var(--accent); padding: 0 0.5rem;">🌐 WordPress REST API Sync & Upload</legend>
+          
+          <div class="form-group">
+            <label for="wpSiteUrlInput">WordPress Site URL</label>
+            <input type="url" id="wpSiteUrlInput" placeholder="https://panoramalenstrip.com" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="wpUsernameInput">WP Username / Email</label>
+              <input type="text" id="wpUsernameInput" placeholder="e.g. admin" />
+            </div>
+            <div class="form-group" style="flex: 1.5;">
+              <label for="wpAppPasswordInput">Application Password</label>
+              <input type="password" id="wpAppPasswordInput" placeholder="e.g. xxxx xxxx xxxx xxxx" autocomplete="off" />
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; gap: 0.5rem;">
+            <p class="form-hint" style="margin: 0; flex: 1;">Use Application Password (WP Admin → Users → Profile → Application Passwords). If your host uses Imunify360 or Wordfence, ensure REST API automation or your IP is whitelisted.</p>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnTestWpConn" style="white-space: nowrap;">🔌 Test Connection</button>
+          </div>
+        </fieldset>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnOpenCredentialsFromSettings">🔑 Change Login Credentials</button>
+        <button class="btn btn-primary" id="saveSettings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Header ═══ -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <defs><linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">Panorama Lens Trip</h1>
+          <p class="logo-subtitle">Article Tool</p>
+        </div>
+      </div>
+    </div>
+    <div class="header-center">
+      <nav class="view-nav">
+        <button class="nav-btn active" id="btnShowWriter">✍️ Writer Tool</button>
+        <button class="nav-btn" id="btnShowManager">📋 Article Manager</button>
+        <button class="nav-btn" id="btnShowSchedule">📅 Article Schedule</button>
+      </nav>
+    </div>
+    <div class="header-right">
+      <!-- User profile & role badge -->
+      <div class="user-profile-badge" id="userProfileBadge" style="display: flex;">
+        <span class="user-role-avatar" id="userAvatar">👑</span>
+        <div class="user-info-text">
+          <span class="user-name" id="userHeaderName">admin</span>
+          <span class="user-role-tag" id="userRoleTag">Admin</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" title="Sign out of your account" style="margin-right: 0.25rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="hide-mobile">Logout</span>
+      </button>
+      <button class="btn btn-ghost" id="themeToggleBtn" title="Toggle Theme" aria-label="Toggle Theme">
+        <svg id="themeIconDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="themeIconLight" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="btn btn-ghost admin-only-section" id="openSettings" title="Admin Settings" aria-label="Admin Settings" style="display: none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ Main Content ═══ -->
+<main class="app-main">
+  <nav class="mobile-writer-nav" id="mobileWriterNav">
+    <button class="mobile-tab-btn active" data-panel="input" id="btnTabInput">✍️ Compose</button>
+    <button class="mobile-tab-btn" data-panel="queue" id="btnTabQueue">📋 Queue <span class="count-badge" id="mobileQueueBadge">0</span></button>
+    <button class="mobile-tab-btn" data-panel="preview" id="btnTabPreview">👁️ Preview</button>
+  </nav>
+
+
+    <!-- ── Left Panel: Input Form ── -->
+    <section class="panel panel-input" id="inputPanel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Compose Article
+        </h2>
+      </div>
+      <div class="panel-body">
+        <div class="mode-switcher">
+          <button class="mode-btn active" data-mode="compose" id="modeComposeBtn">📝 Compose New</button>
+          <button class="mode-btn" data-mode="update" id="modeUpdateBtn">🔄 Update Section</button>
+          <button class="mode-btn" data-mode="image-seo" id="modeImageSeoBtn">🖼️ Image SEO</button>
+          <button class="mode-btn" data-mode="insert-link" id="modeInsertLinkBtn">🔗 Insert Internal Link</button>
+        </div>
+
+        <form id="articleForm" autocomplete="off" class="mode-compose">
+          <div class="form-group hide-in-imageseo hide-in-insertlink">
+            <label for="titleInput">Article Title <span class="required">*</span></label>
+            <input type="text" id="titleInput" placeholder="e.g. The Ultimate Guide to Machine Learning" />
+          </div>
+
+          <!-- Insert Internal Link specific fields -->
+          <div class="form-group show-in-insertlink">
+            <label for="insertLinkTargetSelect">Select Target Completed Article <span class="required">*</span></label>
+            <select id="insertLinkTargetSelect">
+              <option value="">-- Choose Completed Article to Edit --</option>
+            </select>
+          </div>
+
+          <div class="form-group show-in-insertlink">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <label style="margin-bottom: 0;">Internal Links to Insert <span class="required">*</span></label>
+              <button type="button" class="btn btn-sm btn-ghost" id="autoInsertLinksBtn" style="font-size: 0.75rem; color: var(--accent, #3b82f6);">
+                ⚡ Auto-fill Related Links
+              </button>
+            </div>
+            <div id="insertLinksListContainer">
+              <!-- Internal link rows will be appended here -->
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" id="addInsertLinkBtn" style="margin-top: 0.5rem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Link
+            </button>
+          </div>
+
+          <!-- Image SEO specific fields -->
+          <div class="form-group show-in-imageseo">
+            <label for="imageFileInput">Upload Image <span class="required">*</span></label>
+            <div class="image-upload-wrapper">
+              <input type="file" id="imageFileInput" accept="image/*" style="display: none;" />
+              <button type="button" class="btn btn-secondary" id="imageUploadBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Choose Image
+              </button>
+              <span id="imageFileName" class="file-name-text">No file chosen</span>
+            </div>
+            <div id="imagePreviewContainer" class="image-preview-box" style="display: none; margin-top: 0.75rem;">
+              <img id="imagePreview" src="" alt="Selected Image Preview" />
+            </div>
+          </div>
+
+          <div class="form-group show-in-imageseo">
+            <label for="imageLocationInput">Location <span class="optional">(optional)</span></label>
+            <input type="text" id="imageLocationInput" placeholder="e.g. Ubud, Bali, Indonesia" />
+          </div>
+
+          <div class="form-group show-in-imageseo">
+            <label for="imageSceneInput">Scene Description <span class="optional">(optional)</span></label>
+            <textarea id="imageSceneInput" rows="2" placeholder="e.g. A tourist swinging over lush green jungle terraced rice fields during golden hour..."></textarea>
+          </div>
+
+          <div class="form-group show-in-update">
+            <label for="wpUrlInput">WordPress Post URL <span class="required">*</span></label>
+            <input type="url" id="wpUrlInput" placeholder="https://yourblog.com/existing-post/" />
+          </div>
+
+          <div class="form-group show-in-update">
+            <label for="targetSubtitleInput">Target Subtitle (H2) <span class="required">*</span></label>
+            <input type="text" id="targetSubtitleInput" placeholder="e.g. Hidden gem location for sunrise" />
+          </div>
+
+          <div class="form-group show-in-compose">
+            <label for="topicInput">Topic / Core Question <span class="required">*</span></label>
+            <textarea id="topicInput" rows="2" placeholder="e.g. What is machine learning and how does it impact modern businesses?"></textarea>
+          </div>
+
+          <div class="form-group show-in-compose">
+            <label for="keyphraseInput">Focus Keyphrase <span class="required">*</span></label>
+            <input type="text" id="keyphraseInput" placeholder="e.g. machine learning for business" />
+          </div>
+
+          <div class="form-group show-in-compose admin-only-section">
+            <label for="toneSelect">Tone</label>
+            <select id="toneSelect">
+              <option value="Professional">Professional</option>
+              <option value="Conversational">Conversational</option>
+              <option value="Academic">Academic</option>
+              <option value="Creative">Creative</option>
+              <option value="Journalistic">Journalistic</option>
+              <option value="Persuasive">Persuasive</option>
+              <option value="Friendly">Friendly</option>
+              <option value="Authoritative">Authoritative</option>
+            </select>
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="wordCountModeSelect">Word Count Mode</label>
+            <select id="wordCountModeSelect">
+              <option value="total">Total Article Length (Divided by custom divisor)</option>
+              <option value="per-section">Per Section Length (Direct)</option>
+            </select>
+            <p class="form-hint">Choose how the word count setting should be applied to generated content.</p>
+          </div>
+
+          <div class="form-group admin-only-section" id="wordCountDivisorGroup">
+            <label for="wordCountDivisorInput">Word Count Divisor</label>
+            <input type="number" id="wordCountDivisorInput" min="2" max="50" step="1" placeholder="e.g. 10" />
+            <p class="form-hint">Specifies how many parts the total word count is divided by (e.g., 10 for 1 intro + 8 sections + 1 conclusion).</p>
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="targetWordCountInput">Target Word Count</label>
+            <input type="number" id="targetWordCountInput" min="500" max="4000" step="500" placeholder="e.g. 3000" />
+            <p class="form-hint">Controls the target length of the generated introduction, sections, and conclusion.</p>
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="customPromptInput">Prompt Strategy <span class="optional">(optional)</span></label>
+            <textarea id="customPromptInput" rows="3" placeholder="e.g. You are a witty tech blogger writing for Gen Z. Use lots of emojis and pop culture references..."></textarea>
+            <p class="form-hint">These instructions will guide the AI's overall behavior. Preserved across modes.</p>
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="targetAudienceInput">Target Audience <span class="optional">(persistent)</span></label>
+            <textarea id="targetAudienceInput" rows="2" placeholder="e.g. High-net-worth individuals from Europe, the US, Australia, and Dubai interested in travel..."></textarea>
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="brandInput">Brand / Company <span class="optional">(persistent)</span></label>
+            <input type="text" id="brandInput" placeholder="e.g. Panorama Lens Trip (Photography tours package...)" />
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="ctaLinkInput">Call to Action (CTA) Link <span class="optional">(persistent)</span></label>
+            <input type="url" id="ctaLinkInput" placeholder="e.g. https://panoramalenstrip.com/contact/" />
+            <p class="form-hint">This link will be used in the generated calls to action (CTAs).</p>
+          </div>
+
+          <div class="form-group admin-only-section">
+            <label for="targetLanguageSelect">Target Output Language</label>
+            <select id="targetLanguageSelect">
+              <option value="English">English</option>
+              <option value="Indonesian">Indonesian</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="German">German</option>
+              <option value="Italian">Italian</option>
+              <option value="Portuguese">Portuguese</option>
+              <option value="Japanese">Japanese</option>
+              <option value="Chinese">Chinese</option>
+            </select>
+            <p class="form-hint">Regardless of the input language, the output will be generated in this language.</p>
+          </div>
+
+          <div class="form-group" id="adminActionsContainer" style="display: none; margin-top: 1rem;">
+            <button type="button" class="btn btn-accent" id="saveAdminSettingsBtn" style="width: 100%;">
+              💾 Save Admin Settings
+            </button>
+            <p class="form-hint" style="text-align: center; margin-top: 0.25rem;">Saving updates these settings globally for all users.</p>
+          </div>
+
+          <div class="form-group show-in-update">
+            <label for="starterWritingsInput">Starter Writings <span class="optional">(optional)</span></label>
+            <textarea id="starterWritingsInput" rows="5" placeholder="Paste your rough draft or bullet points for this specific section here. The AI will rewrite and expand it to fit the article..."></textarea>
+          </div>
+          <div class="form-group hide-in-insertlink">
+            <label>Expert Quotations <span class="optional">(optional)</span></label>
+            <div id="quotationsContainer">
+              <!-- Quotation rows will be appended here -->
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" id="addQuotationBtn" style="margin-top: 0.5rem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Quotation
+            </button>
+          </div>
+
+          <div class="form-group show-in-compose">
+            <label>Article Images <span class="optional">(optional)</span></label>
+            <div id="articleImagesContainer">
+              <!-- Uploaded images will be appended here -->
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" id="addArticleImageBtn" style="margin-top: 0.5rem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Image
+            </button>
+          </div>
+
+          <div class="form-group show-in-compose">
+            <label>Internal Links <span class="optional">(optional)</span></label>
+            <div id="internalLinksContainer">
+              <!-- Internal link rows will be appended here -->
+            </div>
+            <button type="button" class="btn btn-sm btn-ghost" id="addInternalLinkBtn" style="margin-top: 0.5rem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Internal Link
+            </button>
+          </div>
+
+          <details class="starter-details show-in-compose">
+            <summary>📎 Starter Article <span class="optional">(optional)</span></summary>
+            <div class="form-group" style="margin-top: 0.75rem">
+              <textarea id="starterInput" rows="5" placeholder="Paste a reference article to guide the AI's direction, context, and style..."></textarea>
+            </div>
+          </details>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="addToQueueBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add to Queue
+            </button>
+            <button type="button" class="btn btn-primary" id="generateSingleBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Generate Now
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ── Center Panel: Queue ── -->
+    <section class="panel panel-queue" id="queuePanel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Queue
+          <span class="badge" id="queueCount">0</span>
+        </h2>
+        <div class="panel-actions">
+          <button class="btn btn-sm btn-ghost admin-only-section" id="clearQueueBtn" title="Clear queue" style="display:none">Clear</button>
+          <button class="btn btn-sm btn-accent" id="generateAllBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate All
+          </button>
+        </div>
+      </div>
+      <div class="panel-body" id="queueList">
+        <div class="empty-state" id="emptyQueue">
+          <div class="empty-icon">📋</div>
+          <p>No articles in queue</p>
+          <p class="empty-hint">Fill in the form and click "Add to Queue" to batch generate multiple articles.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Right Panel: Preview ── -->
+    <section class="panel panel-preview" id="previewPanel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Preview
+        </h2>
+        <div class="panel-actions" id="previewActions" style="display:none">
+          <div class="preview-tabs">
+            <button class="tab-btn active" data-tab="rendered" id="tabRendered">Preview</button>
+            <button class="tab-btn" data-tab="raw" id="tabRaw">Markdown</button>
+          </div>
+          <button class="btn btn-sm btn-secondary" id="btnEditPreviewContent" title="Edit article text and SEO metadata">
+            ✏️ Edit Article & Metadata
+          </button>
+          <button class="btn btn-sm btn-secondary" id="regenerateCurrentBtn" title="Regenerate article using Gemini / OpenAI AI">
+            🔄 Regenerate Article
+          </button>
+          <button class="btn btn-sm btn-ghost text-danger admin-only-section" id="btnRemovePreviewContent" title="Remove article" style="display:none">
+            🗑️ Remove
+          </button>
+          <button class="btn btn-sm btn-ghost" id="copyBtn" title="Copy to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button class="btn btn-sm btn-ghost" id="downloadBtn" title="Download as .txt">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            .txt
+          </button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="preview-stats" id="previewStats" style="display:none">
+          <div class="stat">
+            <span class="stat-value" id="statWords">0</span>
+            <span class="stat-label">Words</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="statReadTime">0 min</span>
+            <span class="stat-label">Read Time</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="statKeyphrase">0</span>
+            <span class="stat-label">Keyphrase Count</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="statSections">0</span>
+            <span class="stat-label">Sections</span>
+          </div>
+        </div>
+        <div id="previewRendered" class="preview-content markdown-body"></div>
+        <div id="previewRaw" class="preview-content preview-raw" style="display:none"></div>
+        <div id="previewImagesGallery" class="preview-images-gallery" style="display:none; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+          <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">🖼️ Image SEO Metadata & Gallery</h3>
+          <div id="galleryContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+            <!-- Gallery items will be dynamically generated here -->
+          </div>
+        </div>
+        <div class="empty-state" id="emptyPreview">
+          <div class="empty-icon">✨</div>
+          <p>No article selected</p>
+          <p class="empty-hint">Generate an article or click on a completed item in the queue to preview it here.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══ Article Manager Main ═══ -->
+  <main class="app-main-manager" id="managerMain" style="display: none;">
+    <div class="manager-container">
+      
+      <!-- Manager Header / Controls -->
+      <div class="manager-controls-card animate-fade-in">
+        <div class="controls-left">
+          <h2 class="section-title">📋 Article Database</h2>
+          <p class="section-subtitle">Track, filter, and compose articles in your content strategy.</p>
+        </div>
+        <div class="controls-right">
+          <button class="btn btn-secondary" id="btnSyncWP">
+            <span class="sync-spinner" style="display:none; margin-right: 0.35rem;">⏳</span>
+            <span class="sync-text">🔄 Sync WordPress</span>
+          </button>
+          
+          <!-- Admin Actions (manual addition and CSV) -->
+          <div class="admin-actions-group admin-only-section" style="display: none;">
+            <button class="btn btn-secondary" id="btnOpenAddModal">
+              ➕ Add Manual
+            </button>
+            <button class="btn btn-secondary" id="btnImportDefaultCSV" title="Import default plan keyword - New Plan.csv from workspace">
+              📄 Import Default CSV
+            </button>
+            <label class="btn btn-primary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0;">
+              📤 Upload CSV
+              <input type="file" id="fileCsvInput" accept=".csv" style="display: none;" />
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Filter and Search Bar -->
+      <div class="filter-search-bar animate-fade-in">
+        <div class="filter-tabs" id="managerFilters">
+          <button class="filter-btn active" data-status="all">Semua <span class="count-badge" id="badgeAll">0</span></button>
+          <button class="filter-btn" data-status="di_antrean">📥 Di Antrean <span class="count-badge" id="badgeAntrean">0</span></button>
+          <button class="filter-btn" data-status="belum_dibuat">Belum Dibuat <span class="count-badge" id="badgeBelum">0</span></button>
+          <button class="filter-btn" data-status="telah_dibuat">Telah Dibuat <span class="count-badge" id="badgeTelah">0</span></button>
+          <button class="filter-btn" data-status="dijadwalkan">Dijadwalkan <span class="count-badge" id="badgeDijadwalkan">0</span></button>
+          <button class="filter-btn" data-status="draft">Draft <span class="count-badge" id="badgeDraft">0</span></button>
+        </div>
+        <div class="search-box">
+          <input type="text" id="txtSearchManager" placeholder="Search by title, keyphrase, topic..." />
+        </div>
+      </div>
+      
+      <!-- Articles Table -->
+      <div class="articles-table-wrapper animate-fade-in">
+        <table class="articles-table">
+          <thead>
+            <tr>
+              <th style="width: 10%;">Page Role</th>
+              <th style="width: 16%;">Focus Keyphrase</th>
+              <th style="width: 22%;">H1 Title (SEO)</th>
+              <th style="width: 20%;">Topic / Question</th>
+              <th style="width: 10%;">Intent</th>
+              <th style="width: 10%;">Status</th>
+              <th style="width: 12%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="articlesTableBody">
+            <!-- Dynamic rows go here -->
+          </tbody>
+        </table>
+        
+        <div class="empty-state" id="emptyManager" style="display: none;">
+          <div class="empty-icon">📂</div>
+          <p>No articles found</p>
+          <p class="empty-hint">Try importing the CSV or add an article manually in admin mode.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── Article Schedule Main (Calendar View) ── -->
+  <main class="app-main-schedule" id="scheduleMain" style="display: none;">
+    <div class="schedule-header-bar animate-fade-in">
+      <div class="schedule-nav-controls">
+        <button class="btn btn-secondary btn-sm" id="btnPrevMonth">◀ Prev</button>
+        <button class="btn btn-secondary btn-sm" id="btnTodayMonth">Today</button>
+        <button class="btn btn-secondary btn-sm" id="btnNextMonth">Next ▶</button>
+        <h2 class="schedule-month-title" id="calendarMonthTitle">July 2026</h2>
+      </div>
+      <div class="schedule-actions">
+        <div class="schedule-legend">
+          <span class="legend-item"><span class="legend-dot dot-published"></span> Published</span>
+          <span class="legend-item"><span class="legend-dot dot-scheduled"></span> Scheduled</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnSyncWPSchedule" title="Sync published & scheduled articles directly from WordPress">
+          🔄 Sync WordPress
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnOpenScheduleModal">
+          📅 Schedule Article
+        </button>
+      </div>
+    </div>
+
+    <div class="calendar-wrapper animate-fade-in">
+      <div class="calendar-grid-header">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div class="calendar-grid-body" id="calendarGridBody">
+        <!-- Calendar day cells generated dynamically -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ Schedule / Publish Modal ═══ -->
+  <div class="modal-overlay" id="scheduleModal">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h2 id="scheduleModalTitle">📅 Schedule or Publish Article</h2>
+        <button class="modal-close" id="closeScheduleModal" aria-label="Close schedule modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="schArticleId" value="" />
+        <input type="hidden" id="schQueueId" value="" />
+        
+        <div class="form-group">
+          <label for="schArticleSelect">Select Article <span class="required">*</span></label>
+          <select id="schArticleSelect">
+            <option value="">-- Choose Article from Manager or Queue --</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="schActionSelect">Action</label>
+          <select id="schActionSelect">
+            <option value="schedule">📅 Schedule for Upload</option>
+            <option value="publish">🚀 Publish Immediately</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="schDateGroup">
+          <div class="form-group" style="flex: 1.5;">
+            <label for="schDateInput">Schedule Date <span class="required">*</span></label>
+            <input type="date" id="schDateInput" />
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label for="schTimeInput">Schedule Time (Hours)</label>
+            <input type="time" id="schTimeInput" value="09:00" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="schLinkInput">Final WordPress Link (Optional)</label>
+          <input type="url" id="schLinkInput" placeholder="https://panoramalenstrip.com/..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelScheduleModal">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveScheduleModal">Confirm Schedule / Publish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Publishing / Scheduling Progress Overlay ═══ -->
+  <div class="modal-overlay" id="publishingProgressModal">
+    <div class="modal modal-md" style="text-align: center; padding: 2rem;">
+      <div class="publishing-spinner" style="margin: 0 auto 1.25rem auto;"></div>
+      <h3 id="publishingProgressTitle" style="font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">Publishing to WordPress...</h3>
+      <p id="publishingProgressSubtitle" style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">Uploading image media & syncing article with WordPress...</p>
+      <div class="progress-bar-container" style="width: 100%; height: 8px; background: var(--bg-surface); border-radius: 4px; overflow: hidden; position: relative;">
+        <div id="publishingProgressBar" class="publishing-progress-bar-animated" style="height: 100%; width: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899); border-radius: 4px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Day Activity Details Pop-Up Modal ═══ -->
+  <div class="modal-overlay" id="dayDetailsModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <h2 id="dayDetailsModalTitle">📅 Article Activities</h2>
+          <div id="dayDetailsModalSubtitle" style="margin-top: 0.25rem; font-weight: 600; color: var(--accent); font-size: 0.9rem;">July 25, 2026</div>
+        </div>
+        <button class="modal-close" id="closeDayDetailsModal" aria-label="Close day details modal">&times;</button>
+      </div>
+      <div class="modal-body" id="dayDetailsModalBody" style="max-height: 60vh; overflow-y: auto; padding: 1.25rem;">
+        <!-- Day activities rendered dynamically -->
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button class="btn btn-secondary" id="btnCloseDayDetails">Close</button>
+        <button class="btn btn-primary" id="btnScheduleForThisDay">➕ Schedule Article for This Day</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Edit Generated Article & Metadata Modal ═══ -->
+  <div class="modal-overlay" id="editContentModal">
+    <div class="modal modal-lg" style="max-width: 900px; width: 95%;">
+      <div class="modal-header">
+        <div>
+          <h2>✏️ Edit Article Content & SEO Metadata</h2>
+          <p class="section-subtitle">Modify focus keyphrase, meta title, URL slug, meta description, and article content.</p>
+        </div>
+        <button class="modal-close" id="closeEditContentModal" aria-label="Close edit content modal">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto; padding: 1.25rem;">
+        
+        <fieldset style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; background: rgba(99,102,241,0.03);">
+          <legend style="font-weight: 700; font-size: 0.85rem; color: var(--accent); padding: 0 0.5rem;">🔍 SEO Metadata Settings</legend>
+          
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="metaKeyphraseInput">Focus Keyphrase <span class="required">*</span></label>
+              <input type="text" id="metaKeyphraseInput" placeholder="e.g. Mount Bromo Milky Way Tour" />
+            </div>
+            <div class="form-group" style="flex: 1.5;">
+              <label for="metaTitleInput">Meta Title (H1 / SEO)</label>
+              <input type="text" id="metaTitleInput" placeholder="e.g. Mount Bromo Milky Way Tour: Best Time & Photography Guide" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1.5;">
+              <label for="metaSlugInput">URL Slug</label>
+              <input type="text" id="metaSlugInput" placeholder="e.g. mount-bromo-milky-way-tour-guide" />
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="metaPageRoleInput">Page Role</label>
+              <input type="text" id="metaPageRoleInput" placeholder="e.g. Cluster, Pillar..." />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label for="metaCategoriesInput">Categories</label>
+              <input type="text" id="metaCategoriesInput" placeholder="e.g. Mount Bromo, Photography Tours..." />
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="metaTagsInput">Tags</label>
+              <input type="text" id="metaTagsInput" placeholder="e.g. Mount Bromo, Milky Way, Astrophotography..." />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="metaDescriptionInput">Meta Description</label>
+            <textarea id="metaDescriptionInput" rows="2" placeholder="Max 140 chars description for search engine snippet..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="metaExcerptInput">Excerpt</label>
+            <textarea id="metaExcerptInput" rows="2" placeholder="Short article summary for archives & search results..."></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-group">
+          <label for="editFullContentArea" style="font-weight: 700;">📝 Article Content (Markdown)</label>
+          <textarea id="editFullContentArea" rows="16" style="font-family: var(--font-mono, monospace); font-size: 0.9rem; line-height: 1.5; padding: 0.75rem;" placeholder="Full Markdown text of the article..."></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button class="btn btn-secondary" id="btnCancelEditContent">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveEditContent">💾 Save Changes & Update Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Article Add/Edit Modal ═══ -->
+  <div class="modal-overlay" id="articleModal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="articleModalTitle">Add Article</h2>
+        <button class="modal-close" id="closeArticleModal" aria-label="Close article modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editArticleId" value="" />
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label for="artPageRoleInput">Page Role</label>
+            <input type="text" id="artPageRoleInput" placeholder="e.g. Pillar, Cluster 1..." />
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label for="artIntentInput">Intent</label>
+            <input type="text" id="artIntentInput" placeholder="e.g. Informational, Commercial..." />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="artKeyphraseInput">Focus Keyphrase <span class="required">*</span></label>
+          <input type="text" id="artKeyphraseInput" placeholder="e.g. Bromo Volcano Sunrise" />
+        </div>
+        <div class="form-group">
+          <label for="artTitleInput">H1 Title (SEO) <span class="required">*</span></label>
+          <input type="text" id="artTitleInput" placeholder="e.g. Bromo Volcano Sunrise: Viewpoints, Timing..." />
+        </div>
+        <div class="form-group">
+          <label for="artTopicInput">Topic / Question</label>
+          <textarea id="artTopicInput" rows="2" placeholder="e.g. What is the best way to experience Mount Bromo sunrise?"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex: 2;">
+            <label for="artLinkInput">Final URL Link (WordPress)</label>
+            <input type="url" id="artLinkInput" placeholder="https://panoramalenstrip.com/..." />
+          </div>
+          <div class="form-group" style="flex: 1.2;">
+            <label for="artScheduledDateInput">Scheduled Date</label>
+            <input type="date" id="artScheduledDateInput" />
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label for="artScheduledTimeInput">Time (HH:MM)</label>
+            <input type="time" id="artScheduledTimeInput" value="09:00" />
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label for="artStatusSelect">Status</label>
+            <select id="artStatusSelect">
+              <option value="belum_dibuat">Belum Dibuat</option>
+              <option value="telah_dibuat">Telah Dibuat</option>
+              <option value="dijadwalkan">Dijadwalkan</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelArticleModal">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveArticleModal">Save Article</button>
+      </div>
+    </div>
+  </div>
+
+  </div> <!-- /#appContainer -->
+
+  <!-- ═══ Toast Container ═══ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="assets/js/marked.min.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

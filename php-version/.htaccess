@@ -1,0 +1,60 @@
+# ======================================================================
+# Apache / cPanel .htaccess Configuration for Panorama Lens Trip Tool
+# ======================================================================
+
+Options -Indexes
+Options +FollowSymLinks
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Security: Block sensitive files
+    <FilesMatch "(config\.php|database\.sql|\.env|\.git)">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # API Routing to PHP endpoints
+    RewriteRule ^api/auth/login/?$ api/auth.php?action=login [L,QSA]
+    RewriteRule ^api/login/?$ api/auth.php?action=login [L,QSA]
+    RewriteRule ^api/admin/login/?$ api/auth.php?action=login [L,QSA]
+    RewriteRule ^api/auth/logout/?$ api/auth.php?action=logout [L,QSA]
+    RewriteRule ^api/logout/?$ api/auth.php?action=logout [L,QSA]
+    RewriteRule ^api/admin/logout/?$ api/auth.php?action=logout [L,QSA]
+    RewriteRule ^api/auth/me/?$ api/auth.php?action=me [L,QSA]
+    RewriteRule ^api/auth/check-session/?$ api/auth.php?action=me [L,QSA]
+    RewriteRule ^api/admin/check-session/?$ api/auth.php?action=me [L,QSA]
+    RewriteRule ^api/auth/status/?$ api/auth.php?action=me [L,QSA]
+    RewriteRule ^api/auth/change-password/?$ api/auth.php?action=change-password [L,QSA]
+
+    RewriteRule ^api/settings/?$ api/settings.php [L,QSA]
+    RewriteRule ^api/admin/settings/?$ api/settings.php [L,QSA]
+    RewriteRule ^api/admin/test-wp-connection/?$ api/settings.php?action=test-wp-connection [L,QSA]
+
+    RewriteRule ^api/articles/sync-wp/?$ api/sync-wp.php [L,QSA]
+    RewriteRule ^api/articles/sync/?$ api/sync-wp.php [L,QSA]
+    RewriteRule ^api/articles/schedule-publish/?$ api/publish-wordpress.php [L,QSA]
+    RewriteRule ^api/publish-wordpress/?$ api/publish-wordpress.php [L,QSA]
+    RewriteRule ^api/articles/import-csv/?$ api/articles.php?action=import-csv [L,QSA]
+    RewriteRule ^api/articles/export-csv/?$ api/articles.php?action=export-csv [L,QSA]
+    RewriteRule ^api/articles/([0-9]+)/?$ api/articles.php?id=$1 [L,QSA]
+    RewriteRule ^api/articles/?$ api/articles.php [L,QSA]
+
+    RewriteRule ^api/queue/([a-zA-Z0-9_-]+)/?$ api/queue.php?id=$1 [L,QSA]
+    RewriteRule ^api/queue/?$ api/queue.php [L,QSA]
+
+    RewriteRule ^api/upload/?$ api/upload.php [L,QSA]
+    RewriteRule ^api/upload-image/?$ api/upload.php [L,QSA]
+
+    RewriteRule ^api/generate/?$ api/generate.php [L,QSA]
+    RewriteRule ^api/update-section/?$ api/update-section.php [L,QSA]
+    RewriteRule ^api/insert-link/?$ api/insert-link.php [L,QSA]
+    RewriteRule ^api/generate-image-meta/?$ api/generate-image-meta.php [L,QSA]
+</IfModule>
+
+# Disable buffer for Server-Sent Events on Apache
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+</IfModule>

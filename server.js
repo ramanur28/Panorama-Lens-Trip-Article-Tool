@@ -2720,7 +2720,7 @@ Requirements:
 - Use subheadings (### level) if the section benefits from them
 - Include specific examples, data, or actionable advice where appropriate
 - Write in Markdown format
-- Do NOT include the main section heading (## ${section.heading}) — I will add it myself
+- CRITICAL HEADING REQUIREMENT: Do NOT output any section title, H1, or H2 heading. The main section heading (## ${section.heading}) will be inserted automatically. Start immediately with body text paragraphs. Use ONLY level 3 subheadings (###) if you need subsections within this section
 - Ensure smooth transitions and flow${sectionImageInstruction}`;
 
       const sectionResponse = await generateContent({
@@ -2730,7 +2730,9 @@ Requirements:
         openaiApiKey
       });
       let sectionText = sectionResponse.text.trim();
-      sectionText = sectionText.replace(/^(?:##\s*)+/gi, '').trim();
+      while (/^\s*#{1,2}\s+[^\r\n]+/i.test(sectionText)) {
+        sectionText = sectionText.replace(/^\s*#{1,2}\s+[^\r\n]+\r?\n*/i, '').trim();
+      }
       const firstLine = sectionText.split('\n')[0];
       if (firstLine && firstLine.toLowerCase().includes(section.heading.toLowerCase())) {
         const remaining = sectionText.split('\n').slice(1).join('\n').trim();
