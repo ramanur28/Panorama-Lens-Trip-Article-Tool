@@ -1,15 +1,40 @@
 # =================================================================
-# 1. SENSITIVE CREDENTIALS & ENVIRONMENT VARIABLES
+# 1. SENSITIVE CREDENTIALS, SECRETS & ENVIRONMENT VARIABLES
 # =================================================================
-# Environment files (contains API keys, passwords, VPS credentials)
+# Environment variable files (API keys, DB passwords, VPS & Cloud credentials)
 .env
 .env.*
 .env*.local
+*.env
+.env.backup
+.env.bak
+.env.production
+.env.deploy
 
-# Whitelist safe template / example files
+# Safe templates/examples only
 !.env.example
 !.env.*.example
 !.env*.example
+
+# API Keys, OAuth tokens & Service Accounts
+secrets/
+secret/
+private/
+*.credentials
+credentials.json
+client_secret*.json
+service_account*.json
+service-account*.json
+serviceAccountKey*.json
+firebase*.json
+google-services.json
+token.json
+tokens.json
+auth.json
+*.secret
+*.secret.json
+jwt.key
+jwt.secret
 
 # Private Keys, Certificates, and SSH Credentials
 *.pem
@@ -22,41 +47,61 @@
 *.p12
 id_rsa*
 id_ed25519*
+id_ecdsa*
+id_dsa*
 .ssh/
-
-# Secret & API key files
-secrets/
-*.credentials
-credentials.json
-client_secret*.json
+known_hosts*
+authorized_keys*
 
 # =================================================================
-# 2. DATABASE DUMPS & EXPORTS (CONTAINS LIVE SESSIONS, KEYS, USERS)
+# 2. DATABASE DUMPS, EXPORTS & SQL FILES
 # =================================================================
+# All SQL database dumps & SQLite/Key-Value stores (contains live sessions, keys, passwords)
 *.sql
 *.sql.gz
+*.sql.bak
+*.sql.zip
+*.sql.tar.gz
 *.sqlite
 *.sqlite3
 *.db
 *.dump
 *.rdb
+*.mysqldump
 
-# Whitelist safe sanitized example database schemas
-!php-version/database.example.sql
+# PHP Version SQL files & live dumps
+php-version/*.sql
+php-version/**/*.sql
+php-version/database.sql
+php-version/database.example.sql
+php-version/*.sql.gz
+
+# Safe sanitized schemas without live data (schema-only definitions)
 !*.schema.sql
-!*.example.sql
 
 # =================================================================
-# 3. RUNTIME DATA, STORAGE & LOCAL BACKUPS
+# 3. RUNTIME DATA, SETTINGS & STORAGE (NODE.JS & BACKEND)
 # =================================================================
-# Node.js backend storage (contains admin settings, articles, and uploads)
+# Node.js backend persistent storage (contains live API keys, WP passwords, articles)
 data/*
 !data/.gitkeep
 !data/uploads/
 
-# Backups folder
+# Specific sensitive JSON files containing credentials & settings
+admin_settings.json
+data/admin_settings.json
+article_manager.json
+data/article_manager.json
+articles.json
+data/articles.json
+*settings.json
+!settings.example.json
+!.vscode/settings.json
+
+# Local and VPS backups (downloaded via deploy.sh or sync-data.sh)
 backups/*
 !backups/.gitkeep
+*.bak
 
 # User media uploads
 uploads/*
@@ -82,18 +127,47 @@ tmp/
 *.rar
 *.7z
 *.gz
+*.bz2
+*.xz
 *.iso
 panorama-article-tool-cpanel.zip
+php-version/panorama-article-tool.zip
+php-version/*.zip
 
 # =================================================================
-# 5. PHP APPLICATION SPECIFICS
+# 5. PHP APPLICATION & SHARED HOSTING SPECIFICS
 # =================================================================
-# Local configuration overrides
+# Local configuration overrides & live production configs
 php-version/config.local.php
+config.local.php
+*.local.php
+php-version/config.php
+config.php
+!php-version/config.example.php
+!config.example.php
+
+# PHP & cPanel error logs (often expose DB passwords, stack traces, session IDs)
+error_log
+*/error_log
+php-version/error_log
+php_error.log
+php_errors.log
 php-version/*.log
 
+# Server & CMS configs
+php.ini
+.user.ini
+.htpasswd
+php-version/.htpasswd
+wp-config.php
+wp-config-*.php
+wp-config.bak
+
+# PHP session files
+sess_*
+
 # =================================================================
-# 6. LOGS & PROCESS RUNTIME
+# 6. LOGS, DEPLOYMENT & SHELL RUNTIME
 # =================================================================
 logs/
 *.log
@@ -102,6 +176,15 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+deploy.log
+sync.log
+scp.log
+ssh.log
+
+# Shell histories
+*.history
+.bash_history
+.zsh_history
 
 # Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

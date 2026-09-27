@@ -497,6 +497,10 @@ try {
           <span class="badge" id="queueCount">0</span>
         </h2>
         <div class="panel-actions">
+          <button class="btn btn-sm btn-secondary" id="btnSyncWPQueue" title="Sync articles & queue with WordPress">
+            <span class="sync-spinner" style="display:none; margin-right: 0.35rem;">⏳</span>
+            <span class="sync-text">🔄 Sync WordPress</span>
+          </button>
           <button class="btn btn-sm btn-ghost admin-only-section" id="clearQueueBtn" title="Clear queue" style="display:none">Clear</button>
           <button class="btn btn-sm btn-accent" id="generateAllBtn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -670,7 +674,8 @@ try {
           <span class="legend-item"><span class="legend-dot dot-scheduled"></span> Scheduled</span>
         </div>
         <button class="btn btn-secondary btn-sm" id="btnSyncWPSchedule" title="Sync published & scheduled articles directly from WordPress">
-          🔄 Sync WordPress
+          <span class="sync-spinner" style="display:none; margin-right: 0.35rem;">⏳</span>
+          <span class="sync-text">🔄 Sync WordPress</span>
         </button>
         <button class="btn btn-primary btn-sm" id="btnOpenScheduleModal">
           📅 Schedule Article

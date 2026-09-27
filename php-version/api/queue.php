@@ -66,6 +66,31 @@ if ($method === 'GET') {
             $updateStmt->execute([$currentStatus, $r['id']]);
         }
 
+        $finalSched = null;
+        $finalPub = null;
+        if (!empty($r['article_id'])) {
+            $finalSched = $r['article_scheduled_date'] ?: null;
+            $finalPub = $r['article_published_date'] ?: null;
+        } else {
+            $finalSched = !empty($r['article_scheduled_date']) ? $r['article_scheduled_date'] : ($inputParams['scheduledDate'] ?? null);
+            $finalPub = !empty($r['article_published_date']) ? $r['article_published_date'] : ($inputParams['publishedDate'] ?? null);
+        }
+
+        // Mutual exclusivity according to status: scheduled items must never have publishedDate
+        if ($currentStatus === 'dijadwalkan') {
+            $finalPub = null;
+            if (empty($finalSched) && !empty($inputParams['scheduledDate'])) {
+                $finalSched = $inputParams['scheduledDate'];
+            }
+        } elseif ($currentStatus === 'telah_dibuat') {
+            $finalSched = null;
+            if (empty($finalPub) && !empty($inputParams['publishedDate'])) {
+                $finalPub = $inputParams['publishedDate'];
+            }
+        } elseif ($currentStatus === 'belum_dibuat' || $currentStatus === 'pending') {
+            $finalPub = null;
+        }
+
         $items[] = array_merge($inputParams ?: [], [
             'id' => $r['id'],
             'title' => $r['title'],
@@ -75,8 +100,8 @@ if ($method === 'GET') {
             'status' => $currentStatus,
             'managerId' => !empty($r['article_id']) ? (int)$r['article_id'] : ($inputParams['managerId'] ?? null),
             'link' => !empty($r['article_link']) ? $r['article_link'] : ($inputParams['link'] ?? ''),
-            'scheduledDate' => !empty($r['article_scheduled_date']) ? $r['article_scheduled_date'] : ($inputParams['scheduledDate'] ?? null),
-            'publishedDate' => !empty($r['article_published_date']) ? $r['article_published_date'] : ($inputParams['publishedDate'] ?? null),
+            'scheduledDate' => $finalSched,
+            'publishedDate' => $finalPub,
             'wpPostId' => !empty($r['article_wp_post_id']) ? (int)$r['article_wp_post_id'] : ($inputParams['wpPostId'] ?? null),
             'progress' => (int)$r['progress'],
             'progressMessage' => $r['progress_message'] ?? '',

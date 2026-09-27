@@ -329,6 +329,7 @@ function initDom() {
   dom.btnTodayMonth = $("#btnTodayMonth");
   dom.btnSyncWPSchedule = $("#btnSyncWPSchedule");
   dom.btnSyncWP = $("#btnSyncWP");
+  dom.btnSyncWPQueue = $("#btnSyncWPQueue");
   dom.btnTestWpConn = $("#btnTestWpConn");
   dom.btnOpenScheduleModal = $("#btnOpenScheduleModal");
 
@@ -910,6 +911,7 @@ function init() {
   });
   if (dom.btnSyncWPSchedule) dom.btnSyncWPSchedule.addEventListener("click", () => syncWordPressData());
   if (dom.btnSyncWP) dom.btnSyncWP.addEventListener("click", () => syncWordPressData());
+  if (dom.btnSyncWPQueue) dom.btnSyncWPQueue.addEventListener("click", () => syncWordPressData());
   if (dom.btnTestWpConn) dom.btnTestWpConn.addEventListener("click", () => testWpConnection());
   if (dom.btnOpenScheduleModal) dom.btnOpenScheduleModal.addEventListener("click", () => openScheduleModal());
 
@@ -2609,6 +2611,19 @@ async function saveArticleModalHandler() {
   const timeVal = dom.artScheduledTimeInput ? dom.artScheduledTimeInput.value || "09:00" : "09:00";
   const scheduledDate = dateVal ? `${dateVal}T${timeVal}` : null;
 
+  let finalPublishedDate = null;
+  let finalScheduledDate = null;
+  if (status === "telah_dibuat") {
+    finalPublishedDate = (state.editingArticleItem && state.editingArticleItem.publishedDate) || (dateVal || new Date().toISOString().split("T")[0]);
+    finalScheduledDate = null;
+  } else if (status === "dijadwalkan") {
+    finalScheduledDate = scheduledDate || (dateVal ? `${dateVal}T${timeVal}` : null);
+    finalPublishedDate = null;
+  } else if (status === "draft") {
+    finalScheduledDate = null;
+    finalPublishedDate = null;
+  }
+
   const payload = {
     pageRole,
     intent,
@@ -2617,7 +2632,8 @@ async function saveArticleModalHandler() {
     topic,
     link,
     status,
-    scheduledDate
+    scheduledDate: finalScheduledDate,
+    publishedDate: finalPublishedDate
   };
 
   if (idStr) {
@@ -2760,47 +2776,66 @@ function renderCalendar() {
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
-  const todayStr = new Date().toISOString().split("T")[0];
-
   // Gather all scheduled / published events
   const eventsByDate = {};
-  const processedKeys = new Set();
+  const processedArticleIds = new Set();
+  const processedTitles = new Set();
 
-  const allItems = [...state.queue, ...state.articles];
-  allItems.forEach(item => {
-    // Only include items that are explicitly published or valid future scheduled
-    const isPub = item.status === "telah_dibuat" || item.status === "published" || (!!item.publishedDate && item.status !== "pending" && item.status !== "generating" && item.status !== "complete");
+  const unifiedItems = [];
 
-    let isSch = false;
-    if (!isPub && (item.status === "dijadwalkan" || item.status === "scheduled")) {
-      const schDate = item.scheduledDate ? item.scheduledDate.split("T")[0].split(" ")[0] : null;
-      if (schDate && schDate >= todayStr) {
-        isSch = true;
-      }
-    }
+  // Articles from Article Manager are authoritative
+  if (Array.isArray(state.articles)) {
+    state.articles.forEach(art => {
+      unifiedItems.push(art);
+      if (art.id != null) processedArticleIds.add(String(art.id));
+      if (art.title) processedTitles.add(art.title.toLowerCase().trim());
+    });
+  }
+
+  // Include standalone queue items that are not yet in Article Manager
+  if (Array.isArray(state.queue)) {
+    state.queue.forEach(q => {
+      const qManagerId = q.managerId != null ? String(q.managerId) : null;
+      const qTitle = (q.title || "").toLowerCase().trim();
+      if (qManagerId && processedArticleIds.has(qManagerId)) return;
+      if (qTitle && processedTitles.has(qTitle)) return;
+      unifiedItems.push(q);
+    });
+  }
+
+  unifiedItems.forEach(item => {
+    // Strictly mutually exclusive status:
+    const isSch = item.status === "dijadwalkan" || item.status === "scheduled";
+    const isPub = !isSch && (
+      item.status === "telah_dibuat" || 
+      item.status === "published" || 
+      (Boolean(item.publishedDate) && !["pending", "generating", "complete", "draft", "belum_dibuat"].includes(item.status))
+    );
 
     if (isPub || isSch) {
-      const rawDate = isPub
-        ? (item.publishedDate || item.scheduledDate || item.date)
-        : (item.scheduledDate || item.publishedDate || item.date);
+      let targetDateStr = null;
+      if (isSch) {
+        targetDateStr = item.scheduledDate || item.date || item.createdAt;
+      } else {
+        targetDateStr = item.publishedDate || item.date || item.createdAt;
+      }
 
-      if (rawDate && typeof rawDate === "string") {
-        const dStr = rawDate.split("T")[0].split(" ")[0];
-        const titleKey = (item.title || item.keyphrase || "").toLowerCase().trim();
-        const uniqueKey = `${dStr}_${titleKey}`;
-
-        if (titleKey && !processedKeys.has(uniqueKey)) {
-          processedKeys.add(uniqueKey);
+      if (targetDateStr && typeof targetDateStr === "string") {
+        const dStr = targetDateStr.split("T")[0].split(" ")[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
           if (!eventsByDate[dStr]) eventsByDate[dStr] = [];
           eventsByDate[dStr].push({
             ...item,
             _isPub: isPub,
-            _isSch: isSch
+            _isSch: isSch,
+            _eventDate: dStr
           });
         }
       }
     }
   });
+
+  state.calendarEventsByDate = eventsByDate;
 
   // Render grid cells
   let cellCount = 0;
@@ -2827,13 +2862,13 @@ function renderCalendar() {
     let badgesHtml = "";
     if (dayEvents.length > 0) {
       const pubCount = dayEvents.filter(e => e._isPub).length;
-      const schCount = dayEvents.filter(e => e._isSch && !e._isPub).length;
+      const schCount = dayEvents.filter(e => e._isSch).length;
 
       if (pubCount > 0) {
-        badgesHtml += `<div class="activity-badge activity-badge-published">🟢 ${pubCount} Published</div>`;
+        badgesHtml += `<div class="activity-badge activity-badge-published" title="${pubCount} published article(s)">🟢 ${pubCount} Published</div>`;
       }
       if (schCount > 0) {
-        badgesHtml += `<div class="activity-badge activity-badge-scheduled">🟡 ${schCount} Scheduled</div>`;
+        badgesHtml += `<div class="activity-badge activity-badge-scheduled" title="${schCount} scheduled article(s)">🟡 ${schCount} Scheduled</div>`;
       }
     }
 
@@ -2863,6 +2898,7 @@ function renderCalendar() {
 
 function openDayDetailsModal(dateStr, dayEvents = []) {
   if (!dom.dayDetailsModal) return;
+  state.currentDayModalDate = dateStr;
   if (dom.dayDetailsModalTitle) dom.dayDetailsModalTitle.textContent = `📅 Activities for ${dateStr}`;
   if (dom.dayDetailsModalSubtitle) dom.dayDetailsModalSubtitle.textContent = `${dayEvents.length} items scheduled or published on this date.`;
 
@@ -2872,10 +2908,20 @@ function openDayDetailsModal(dateStr, dayEvents = []) {
     } else {
       let html = `<div class="day-activities-list">`;
       dayEvents.forEach(item => {
-        const isPub = item._isPub !== undefined ? item._isPub : !!(item.publishedDate || item.status === "telah_dibuat" || item.status === "published");
-        const statusBadge = isPub 
-          ? `<span class="badge badge-success">Published</span>` 
-          : `<span class="badge badge-warning">Scheduled</span>`;
+        const isSch = item._isSch !== undefined ? item._isSch : (item.status === "dijadwalkan" || item.status === "scheduled");
+        const isPub = !isSch && (item._isPub !== undefined ? item._isPub : (item.status === "telah_dibuat" || item.status === "published" || Boolean(item.publishedDate)));
+
+        const statusBadge = isSch
+          ? `<span class="badge badge-warning">🟡 Dijadwalkan (Scheduled)</span>`
+          : `<span class="badge badge-success">🟢 Telah Dibuat (Published)</span>`;
+
+        const dateMeta = isSch
+          ? `<span>📅 Scheduled Date: <strong>${escapeHtml(item.scheduledDate ? item.scheduledDate.substring(0, 10) : dateStr)}</strong></span>`
+          : `<span>🚀 Published Date: <strong>${escapeHtml(item.publishedDate ? item.publishedDate.substring(0, 10) : dateStr)}</strong></span>`;
+
+        const linkMeta = item.link
+          ? `<span>🔗 <a href="${escapeHtml(item.link)}" target="_blank" class="table-link" title="Open WordPress Article">Open WordPress Post</a></span>`
+          : "";
 
         html += `
           <div class="day-activity-card">
@@ -2884,8 +2930,10 @@ function openDayDetailsModal(dateStr, dayEvents = []) {
               ${statusBadge}
             </div>
             <div class="day-activity-meta">
-              <span>🔑 ${escapeHtml(item.keyphrase || "-")}</span>
-              ${item.link ? `<span>🔗 <a href="${item.link}" target="_blank">View Post</a></span>` : ""}
+              <span>🏷️ Role: <strong>${escapeHtml(item.pageRole || "Cluster")}</strong></span>
+              <span>🔑 Keyphrase: <code>${escapeHtml(item.keyphrase || "-")}</code></span>
+              ${dateMeta}
+              ${linkMeta}
             </div>
             <div class="day-activity-actions">
               <button class="btn btn-sm btn-secondary" onclick="window.__composeFromCalendar('${escapeHtml(item.title)}')">📝 Edit / Compose</button>
@@ -2911,6 +2959,7 @@ function openDayDetailsModal(dateStr, dayEvents = []) {
 
 function closeDayDetailsModal() {
   if (dom.dayDetailsModal) dom.dayDetailsModal.classList.remove("active");
+  state.currentDayModalDate = null;
 }
 
 // ── Schedule Modal ───────────────────────────────────────────────
@@ -3295,6 +3344,16 @@ function closeModal() {
 }
 
 async function syncWordPressData() {
+  const syncButtons = [dom.btnSyncWP, dom.btnSyncWPSchedule, dom.btnSyncWPQueue].filter(Boolean);
+  syncButtons.forEach(btn => {
+    btn.disabled = true;
+    const spinner = btn.querySelector(".sync-spinner");
+    if (spinner) spinner.style.display = "inline-block";
+    const textEl = btn.querySelector(".sync-text") || btn;
+    if (!btn.dataset.origText) btn.dataset.origText = textEl.textContent;
+    textEl.textContent = "⏳ Syncing...";
+  });
+
   showToast("Syncing articles with WordPress REST API...", "info");
   try {
     const res = await authFetch(apiPath("/api/articles/sync-wp"), { method: "POST" });
@@ -3308,11 +3367,33 @@ async function syncWordPressData() {
     } else {
       showToast(`WordPress Sync Warning: ${data.error || "Failed to sync WordPress data."}`, "error");
     }
+
+    // Refresh and sync ALL tabs:
+    // 1. Article Manager
     await loadArticles();
+    // 2. Writer Tool Queue & Preview
     await loadQueue();
-    if (typeof renderCalendar === "function") renderCalendar();
+    // 3. Article Schedule Calendar
+    if (typeof renderCalendar === "function") {
+      renderCalendar();
+    }
+    // If Day Details modal is open, refresh its content
+    if (dom.dayDetailsModal && dom.dayDetailsModal.classList.contains("active") && state.currentDayModalDate) {
+      const refreshedEvents = (state.calendarEventsByDate && state.calendarEventsByDate[state.currentDayModalDate]) || [];
+      openDayDetailsModal(state.currentDayModalDate, refreshedEvents);
+    }
   } catch (err) {
     showToast(`Sync Error: ${err.message}`, "error");
+  } finally {
+    syncButtons.forEach(btn => {
+      btn.disabled = false;
+      const spinner = btn.querySelector(".sync-spinner");
+      if (spinner) spinner.style.display = "none";
+      const textEl = btn.querySelector(".sync-text") || btn;
+      if (btn.dataset.origText) {
+        textEl.textContent = btn.dataset.origText;
+      }
+    });
   }
 }
 

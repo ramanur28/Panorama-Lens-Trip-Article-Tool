@@ -333,6 +333,13 @@ class WordPressService {
         return !empty($newTag['id']) ? (int)$newTag['id'] : null;
     }
 
+    public static function cleanTitle(string $t): string {
+        $t = html_entity_decode(strip_tags($t), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $t = str_replace(["’", "‘", "“", "”", "–", "—", "&amp;"], ["'", "'", '"', '"', "-", "-", "&"], $t);
+        $t = preg_replace('/\s+/', ' ', $t);
+        return mb_strtolower(trim($t), 'UTF-8');
+    }
+
     public static function fetchAllPosts(string $wpUrl, ?string $username, ?string $password): array {
         $posts = [];
         $page = 1;
@@ -348,7 +355,7 @@ class WordPressService {
         }
 
         while ($hasMore && $page <= 10) {
-            $url = "{$wpUrl}/wp-json/wp/v2/posts?per_page={$perPage}&page={$page}&status={$statusParam}";
+            $url = "{$wpUrl}/wp-json/wp/v2/posts?per_page={$perPage}&page={$page}&status={$statusParam}&orderby=date&order=desc";
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
@@ -377,10 +384,17 @@ class WordPressService {
             }
         }
 
+        // Sort posts so newest date/modified always comes first
+        usort($posts, function($a, $b) {
+            $timeA = strtotime($a['date'] ?? $a['modified'] ?? '1970-01-01');
+            $timeB = strtotime($b['date'] ?? $b['modified'] ?? '1970-01-01');
+            return $timeB <=> $timeA;
+        });
+
         return $posts;
     }
 
-        public static function syncWordPressArticles(): array {
+    public static function syncWordPressArticles(): array {
         $settings = AIService::getSettings();
         $wpUrl = self::sanitizeUrl($settings['wp_url'] ?? '');
         $user = trim($settings['wp_username'] ?? '');
@@ -393,35 +407,77 @@ class WordPressService {
         $wpPosts = self::fetchAllPosts($wpUrl, $user, $pass);
         $pdo = Database::getConnection();
 
+        // Index WordPress posts by ID and by cleaned title
+        $postsById = [];
+        $postsByCleanTitle = [];
+        foreach ($wpPosts as $p) {
+            $postsById[(string)$p['id']] = $p;
+            $ct = self::cleanTitle($p['title']['rendered'] ?? '');
+            if ($ct !== '' && !isset($postsByCleanTitle[$ct])) {
+                // First encountered is the newest because of usort
+                $postsByCleanTitle[$ct] = $p;
+            }
+        }
+
         $stmt = $pdo->query("SELECT * FROM articles");
         $articles = $stmt->fetchAll();
 
         $updatedCount = 0;
 
-        // ONLY UPDATE existing articles in Article Manager.
-        // DO NOT insert new rows for external WordPress posts.
         foreach ($articles as $art) {
             $match = null;
-            foreach ($wpPosts as $p) {
-                if (!empty($art['wp_post_id']) && (string)$p['id'] === (string)$art['wp_post_id']) {
-                    $match = $p;
-                    break;
-                }
-                $wpTitle = html_entity_decode($p['title']['rendered'] ?? '', ENT_QUOTES, 'UTF-8');
-                if (strcasecmp(trim($wpTitle), trim($art['title'])) === 0) {
-                    $match = $p;
-                    break;
-                }
+            $artTitleClean = self::cleanTitle($art['title']);
+
+            $titleMatch = $postsByCleanTitle[$artTitleClean] ?? null;
+            $idMatch = (!empty($art['wp_post_id']) && isset($postsById[(string)$art['wp_post_id']])) 
+                ? $postsById[(string)$art['wp_post_id']] 
+                : null;
+
+            // Pick the newest post between titleMatch and idMatch
+            if ($titleMatch && $idMatch) {
+                $timeTitle = strtotime($titleMatch['date'] ?? '1970-01-01');
+                $timeId = strtotime($idMatch['date'] ?? '1970-01-01');
+                $match = ($timeTitle >= $timeId) ? $titleMatch : $idMatch;
+            } elseif ($titleMatch) {
+                $match = $titleMatch;
+            } elseif ($idMatch) {
+                $match = $idMatch;
             }
 
             if ($match) {
                 $wpStatus = $match['status'] ?? 'publish';
-                $newStatus = ($wpStatus === 'publish') ? 'telah_dibuat' : (($wpStatus === 'future') ? 'dijadwalkan' : 'belum_dibuat');
-                $wpLink = $match['link'] ?? $art['link'];
-                $pubDate = !empty($match['date']) ? substr($match['date'], 0, 10) : $art['published_date'];
+                $wpLink = !empty($match['link']) ? $match['link'] : ($art['link'] ?? '');
+                $matchDate = !empty($match['date']) ? substr($match['date'], 0, 10) : null;
+                $matchPostId = (int)$match['id'];
 
-                $up = $pdo->prepare("UPDATE articles SET status = ?, link = ?, published_date = ?, wp_post_id = ? WHERE id = ?");
-                $up->execute([$newStatus, $wpLink, $pubDate, $match['id'], $art['id']]);
+                if ($wpStatus === 'publish') {
+                    $newStatus = 'telah_dibuat';
+                    // Ensure date is newest: use WordPress live publish date
+                    $pubDate = $matchDate ?: ($art['published_date'] ?: date('Y-m-d'));
+                    $schedDate = null; // Cleared because it is now published
+                } elseif ($wpStatus === 'future') {
+                    $newStatus = 'dijadwalkan';
+                    // Future date on WordPress is the scheduled publication date
+                    $schedDate = $matchDate ?: ($art['scheduled_date'] ?: date('Y-m-d'));
+                    $pubDate = null; // MUST BE NULL so it is never marked as published
+                } elseif ($wpStatus === 'draft') {
+                    $newStatus = 'draft';
+                    $schedDate = null;
+                    $pubDate = null;
+                } else {
+                    $newStatus = 'belum_dibuat';
+                    $schedDate = null;
+                    $pubDate = null;
+                }
+
+                $up = $pdo->prepare("UPDATE articles SET 
+                    status = ?, 
+                    link = ?, 
+                    scheduled_date = ?, 
+                    published_date = ?, 
+                    wp_post_id = ? 
+                    WHERE id = ?");
+                $up->execute([$newStatus, $wpLink, $schedDate, $pubDate, $matchPostId, $art['id']]);
                 $updatedCount++;
 
                 // Dynamically sync status to generation_queue if item is in queue
@@ -431,6 +487,23 @@ class WordPressService {
                        OR LOWER(TRIM(title)) = LOWER(?)) 
                        AND status NOT IN ('generating')");
                 $qSync->execute([$newStatus, (string)$art['id'], (string)$art['id'], trim($art['title'])]);
+
+                // Also update input_params in generation_queue to keep variables synchronized
+                $stmtQ = $pdo->prepare("SELECT id, input_params FROM generation_queue 
+                    WHERE (id = ? 
+                       OR JSON_UNQUOTE(JSON_EXTRACT(input_params, '$.managerId')) = ? 
+                       OR LOWER(TRIM(title)) = LOWER(?))");
+                $stmtQ->execute([(string)$art['id'], (string)$art['id'], trim($art['title'])]);
+                while ($qRow = $stmtQ->fetch()) {
+                    $qParams = json_decode($qRow['input_params'], true) ?: [];
+                    $qParams['status'] = $newStatus;
+                    $qParams['scheduledDate'] = $schedDate;
+                    $qParams['publishedDate'] = $pubDate;
+                    if (!empty($wpLink)) $qParams['link'] = $wpLink;
+                    if (!empty($matchPostId)) $qParams['wpPostId'] = $matchPostId;
+                    $upQ = $pdo->prepare("UPDATE generation_queue SET input_params = ? WHERE id = ?");
+                    $upQ->execute([json_encode($qParams), $qRow['id']]);
+                }
             }
         }
 

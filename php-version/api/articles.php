@@ -198,6 +198,23 @@ if ($method === 'POST') {
     $status = $item['status'] ?? 'belum_dibuat';
     $sched = !empty($item['scheduledDate']) ? substr($item['scheduledDate'], 0, 10) : null;
     $pub = !empty($item['publishedDate']) ? substr($item['publishedDate'], 0, 10) : null;
+
+    // Consistency safeguard: mutual exclusivity of scheduled vs published
+    if ($status === 'dijadwalkan') {
+        $pub = null;
+        if (empty($sched)) {
+            $sched = date('Y-m-d');
+        }
+    } elseif ($status === 'telah_dibuat') {
+        $sched = null;
+        if (empty($pub)) {
+            $pub = !empty($item['scheduledDate']) ? substr($item['scheduledDate'], 0, 10) : date('Y-m-d');
+        }
+    } elseif ($status === 'belum_dibuat') {
+        $sched = null;
+        $pub = null;
+    }
+
     $article = $item['article'] ?? null;
     $imagesJson = !empty($item['images']) ? json_encode($item['images']) : null;
     $wpPostId = !empty($item['wpPostId']) ? (int)$item['wpPostId'] : null;
@@ -231,6 +248,21 @@ if ($method === 'POST') {
                    OR LOWER(TRIM(title)) = LOWER(?)) 
                    AND status NOT IN ('generating')");
             $qSync->execute([$queueStatus, (string)$id, (string)$id, trim($title)]);
+
+            // Keep input_params in sync
+            $stmtQ = $pdo->prepare("SELECT id, input_params FROM generation_queue 
+                WHERE (id = ? OR JSON_UNQUOTE(JSON_EXTRACT(input_params, '$.managerId')) = ? OR LOWER(TRIM(title)) = LOWER(?))");
+            $stmtQ->execute([(string)$id, (string)$id, trim($title)]);
+            while ($qRow = $stmtQ->fetch()) {
+                $qParams = json_decode($qRow['input_params'], true) ?: [];
+                $qParams['status'] = $queueStatus;
+                $qParams['scheduledDate'] = $sched;
+                $qParams['publishedDate'] = $pub;
+                if (!empty($link)) $qParams['link'] = $link;
+                if (!empty($wpPostId)) $qParams['wpPostId'] = $wpPostId;
+                $upQ = $pdo->prepare("UPDATE generation_queue SET input_params = ? WHERE id = ?");
+                $upQ->execute([json_encode($qParams), $qRow['id']]);
+            }
         }
 
         echo json_encode(['success' => true, 'id' => $id]);

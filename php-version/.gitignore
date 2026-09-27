@@ -1,0 +1,28 @@
+# Database dumps & SQL files
+*.sql
+*.sql.gz
+*.dump
+database.sql
+database.example.sql
+
+# Local configuration overrides
+config.local.php
+config.php
+!config.example.php
+
+# Logs & error reports
+error_log
+*.log
+
+# Server & security files
+.htpasswd
+php.ini
+.user.ini
+
+# Media uploads
+uploads/*
+!uploads/.gitkeep
+
+# Archives
+*.zip
+*.tar.gz
