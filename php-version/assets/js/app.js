@@ -131,6 +131,7 @@ const state = {
   currentMode: "compose", // "compose" | "update"
   currentView: "writer", // "writer" | "manager" | "schedule"
   queue: [],
+  isQueueLoading: true,
   articles: [],
   activeItemId: null,
   editingQueueId: null,
@@ -248,6 +249,7 @@ function initDom() {
   dom.addArticleImageBtn = $("#addArticleImageBtn");
   dom.internalLinksContainer = $("#internalLinksContainer");
   dom.addInternalLinkBtn = $("#addInternalLinkBtn");
+  dom.autoInsertComposeLinksBtn = $("#autoInsertComposeLinksBtn");
   dom.insertLinkTargetSelect = $("#insertLinkTargetSelect");
   dom.insertLinksListContainer = $("#insertLinksListContainer");
   dom.addInsertLinkRowBtn = $("#addInsertLinkBtn");
@@ -268,6 +270,14 @@ function initDom() {
   dom.clearQueueBtn = $("#clearQueueBtn");
   dom.generateAllBtn = $("#generateAllBtn");
   dom.emptyQueue = $("#emptyQueue");
+  dom.queueLoading = $("#queueLoading");
+  dom.queueRefreshSpinner = $("#queueRefreshSpinner");
+  dom.removeQueueModal = $("#removeQueueModal");
+  dom.closeRemoveQueueModal = $("#closeRemoveQueueModal");
+  dom.btnCancelRemoveQueue = $("#btnCancelRemoveQueue");
+  dom.btnConfirmRemoveQueue = $("#btnConfirmRemoveQueue");
+  dom.removeQueueTitle = $("#removeQueueTitle");
+  dom.removeQueueMeta = $("#removeQueueMeta");
 
   // Preview
   dom.previewActions = $("#previewActions");
@@ -447,6 +457,8 @@ async function checkAuthSession() {
     state.isAuthenticated = false;
     state.user = null;
     state.isAdmin = false;
+    state.isQueueLoading = false;
+    renderQueue();
     showAuthGateway();
     return;
   }
@@ -476,6 +488,8 @@ async function checkAuthSession() {
   state.user = null;
   state.isAdmin = false;
   state.token = "";
+  state.isQueueLoading = false;
+  renderQueue();
   localStorage.removeItem("af-auth-token");
   showAuthGateway();
 }
@@ -555,6 +569,8 @@ async function handleLogout() {
   state.user = null;
   state.isAdmin = false;
   state.isAuthenticated = false;
+  state.queue = [];
+  state.isQueueLoading = false;
   localStorage.removeItem("af-auth-token");
 
   if (dom.authUsernameInput) dom.authUsernameInput.value = "";
@@ -812,6 +828,7 @@ function init() {
   if (dom.addQuotationBtn) dom.addQuotationBtn.addEventListener("click", () => addQuotation());
   if (dom.addArticleImageBtn) dom.addArticleImageBtn.addEventListener("click", () => addArticleImage());
   if (dom.addInternalLinkBtn) dom.addInternalLinkBtn.addEventListener("click", () => addInternalLink());
+  if (dom.autoInsertComposeLinksBtn) dom.autoInsertComposeLinksBtn.addEventListener("click", () => autoInsertFormInternalLinks(true));
   if (dom.addInsertLinkRowBtn) dom.addInsertLinkRowBtn.addEventListener("click", () => addInsertLinkRow());
   if (dom.autoInsertLinksBtn) dom.autoInsertLinksBtn.addEventListener("click", () => autoInsertLinks());
 
@@ -928,8 +945,21 @@ function init() {
   if (dom.btnSaveEditContent) dom.btnSaveEditContent.addEventListener("click", saveEditContentModal);
   if (dom.regenerateCurrentBtn) dom.regenerateCurrentBtn.addEventListener("click", () => regenerateQueueItem(state.activeItemId));
   if (dom.btnRemovePreviewContent) dom.btnRemovePreviewContent.addEventListener("click", () => {
-    if (state.activeItemId) removeFromQueue(state.activeItemId);
+    if (!state.isAdmin) {
+      showToast("Access Denied: Only administrators can remove articles from the queue.", "error");
+      return;
+    }
+    if (state.activeItemId) confirmRemoveFromQueue(state.activeItemId);
   });
+
+  if (dom.closeRemoveQueueModal) dom.closeRemoveQueueModal.addEventListener("click", closeRemoveQueueModal);
+  if (dom.btnCancelRemoveQueue) dom.btnCancelRemoveQueue.addEventListener("click", closeRemoveQueueModal);
+  if (dom.btnConfirmRemoveQueue) dom.btnConfirmRemoveQueue.addEventListener("click", () => executeRemoveFromQueue());
+  if (dom.removeQueueModal) {
+    dom.removeQueueModal.addEventListener("click", (e) => {
+      if (e.target === dom.removeQueueModal) closeRemoveQueueModal();
+    });
+  }
 
   // Initial Form Setup
   addArticleImage();
@@ -995,7 +1025,8 @@ function getFormData() {
     .map(item => ({
       title: item.querySelector(".link-title-input") ? item.querySelector(".link-title-input").value.trim() : "",
       url: item.querySelector(".link-url-input") ? item.querySelector(".link-url-input").value.trim() : "",
-      count: item.querySelector(".link-count-input") ? parseInt(item.querySelector(".link-count-input").value, 10) || 1 : 1
+      count: item.querySelector(".link-count-input") ? parseInt(item.querySelector(".link-count-input").value, 10) || 1 : 1,
+      isPillar: (parseInt(item.querySelector(".link-count-input") ? item.querySelector(".link-count-input").value : 1, 10) || 1) >= 3 || (item.querySelector(".link-role-badge") ? item.querySelector(".link-role-badge").textContent.includes("Pillar") : false)
     }))
     .filter(link => link.title && link.url);
 
@@ -1177,7 +1208,19 @@ function createQueueItem(data) {
   };
 }
 
-function addToQueue() {
+async function addToQueue() {
+  if (state.currentMode === "compose") {
+    const currentTitle = dom.titleInput ? dom.titleInput.value.trim() : "";
+    const currentKeyphrase = dom.keyphraseInput ? dom.keyphraseInput.value.trim() : "";
+    const currentTopic = dom.topicInput ? dom.topicInput.value.trim() : "";
+    if (currentTitle || currentKeyphrase || currentTopic) {
+      const existingLinks = getFormInternalLinks();
+      if (existingLinks.length === 0) {
+        await autoInsertFormInternalLinks(false);
+      }
+    }
+  }
+
   const data = validateForm();
   if (!data) return null;
 
@@ -1213,29 +1256,106 @@ function addToQueue() {
   return item;
 }
 
-function removeFromQueue(id) {
-  const idx = state.queue.findIndex((q) => q.id === id);
-  if (idx === -1) return;
-  const item = state.queue[idx];
-  if (item.status === "generating") {
-    showToast("Cannot remove an article that is currently generating.", "error");
+let pendingRemoveQueueId = null;
+
+function confirmRemoveFromQueue(id) {
+  if (!state.isAdmin) {
+    showToast("Access Denied: Only administrators can remove articles from the queue.", "error");
     return;
   }
-  state.queue.splice(idx, 1);
-  
-  authFetch(apiPath(`/api/queue/${id}`), { method: "DELETE" }).catch(err => console.error(err));
-  
-  if (state.activeItemId === id) {
-    state.activeItemId = state.queue.length > 0 ? state.queue[0].id : null;
+  const sId = String(id);
+  const item = state.queue.find((q) => String(q.id) === sId);
+  if (!item) {
+    showToast("Article not found in queue.", "error");
+    return;
   }
-  renderQueue();
-  renderPreview();
-  showToast("Item removed from queue.", "info");
+  if (item.status === "generating") {
+    showToast("Cannot remove an article that is currently generating.", "warning");
+    return;
+  }
+  openRemoveQueueModal(item);
 }
 
-window.__removeFromQueue = (id) => removeFromQueue(id);
+function openRemoveQueueModal(item) {
+  if (!dom.removeQueueModal) return;
+  pendingRemoveQueueId = item.id;
+
+  if (dom.removeQueueTitle) {
+    dom.removeQueueTitle.textContent = item.title || item.keyphrase || "Untitled Article";
+  }
+  if (dom.removeQueueMeta) {
+    const modeLabel = item.mode === "compose" ? "📝 Compose" : item.mode === "update" ? "🔄 Update" : item.mode === "image-seo" ? "🖼️ Image SEO" : item.mode === "insert-link" ? "🔗 Insert Link" : "Standard";
+    dom.removeQueueMeta.textContent = `${modeLabel} • Status: ${item.status || "Pending"}`;
+  }
+
+  dom.removeQueueModal.classList.add("active");
+}
+
+function closeRemoveQueueModal() {
+  pendingRemoveQueueId = null;
+  if (dom.removeQueueModal) dom.removeQueueModal.classList.remove("active");
+}
+
+async function executeRemoveFromQueue() {
+  if (!state.isAdmin) {
+    showToast("Access Denied: Only administrators can remove articles from the queue.", "error");
+    closeRemoveQueueModal();
+    return;
+  }
+  if (!pendingRemoveQueueId) {
+    closeRemoveQueueModal();
+    return;
+  }
+
+  const sId = String(pendingRemoveQueueId);
+  const idx = state.queue.findIndex((q) => String(q.id) === sId);
+  if (idx === -1) {
+    closeRemoveQueueModal();
+    return;
+  }
+
+  const item = state.queue[idx];
+  if (item.status === "generating") {
+    showToast("Cannot remove an article that is currently generating.", "warning");
+    closeRemoveQueueModal();
+    return;
+  }
+
+  state.queue.splice(idx, 1);
+
+  if (String(state.activeItemId) === sId) {
+    state.activeItemId = state.queue.length > 0 ? state.queue[0].id : null;
+  }
+
+  closeRemoveQueueModal();
+  renderQueue();
+  renderPreview();
+
+  try {
+    const res = await authFetch(apiPath(`/api/queue/${sId}`), { method: "DELETE" });
+    if (res.ok) {
+      showToast("Item removed from queue.", "info");
+    } else {
+      const data = await res.json().catch(() => ({}));
+      showToast(`Warning: ${data.error || "Failed to remove item on server."}`, "warning");
+    }
+  } catch (err) {
+    console.error("Failed to delete queue item on server:", err);
+  }
+}
+
+function removeFromQueue(id) {
+  confirmRemoveFromQueue(id);
+}
+
+window.__confirmRemoveFromQueue = (id) => confirmRemoveFromQueue(id);
+window.__removeFromQueue = (id) => confirmRemoveFromQueue(id);
 
 function clearQueue() {
+  if (!state.isAdmin) {
+    showToast("Access Denied: Only administrators can clear the queue.", "error");
+    return;
+  }
   if (state.isGenerating) {
     showToast("Cannot clear queue while generating.", "error");
     return;
@@ -1250,24 +1370,43 @@ function clearQueue() {
   showToast("Queue cleared.", "info");
 }
 
-async function loadQueue() {
-  try {
-    const res = await authFetch(apiPath("/api/queue"));
-    if (res.ok) {
-      const items = await res.json();
-      if (Array.isArray(items)) {
-        state.queue = items;
-        if (items.length > 0) {
-          nextId = Math.max(...items.map(q => q.id || 0), 0) + 1;
-          state.activeItemId = items[0].id;
+let queueFetchPromise = null;
+
+async function loadQueue(force = false) {
+  if (queueFetchPromise && !force) {
+    return queueFetchPromise;
+  }
+  state.isQueueLoading = true;
+  renderQueue();
+
+  queueFetchPromise = (async () => {
+    try {
+      const res = await authFetch(apiPath("/api/queue"));
+      if (res.ok) {
+        const items = await res.json();
+        if (Array.isArray(items)) {
+          state.queue = items;
+          if (items.length > 0) {
+            nextId = Math.max(...items.map(q => q.id || 0), 0) + 1;
+            if (!state.activeItemId || !items.some(q => q.id === state.activeItemId)) {
+              state.activeItemId = items[0].id;
+            }
+          } else {
+            state.activeItemId = null;
+          }
         }
       }
+    } catch (err) {
+      console.error("Failed to load queue from server:", err);
+    } finally {
+      state.isQueueLoading = false;
+      queueFetchPromise = null;
       renderQueue();
       renderPreview();
     }
-  } catch (err) {
-    console.error("Failed to load queue from server:", err);
-  }
+  })();
+
+  return queueFetchPromise;
 }
 
 async function saveQueue() {
@@ -1333,29 +1472,53 @@ function renderQueue() {
 
   if (!dom.queueList) return;
 
-  if (state.queue.length === 0) {
-    if (dom.emptyQueue) dom.emptyQueue.style.display = "flex";
+  const queueLoadingEl = dom.queueLoading || document.getElementById("queueLoading");
+  const emptyQueueEl = dom.emptyQueue || document.getElementById("emptyQueue");
+
+  if (dom.queueRefreshSpinner) {
+    if (state.isQueueLoading && state.queue.length > 0) {
+      dom.queueRefreshSpinner.style.setProperty("display", "inline-block", "important");
+    } else {
+      dom.queueRefreshSpinner.style.setProperty("display", "none", "important");
+    }
+  }
+
+  if (state.isQueueLoading && state.queue.length === 0) {
+    if (queueLoadingEl) queueLoadingEl.style.setProperty("display", "flex", "important");
+    if (emptyQueueEl) emptyQueueEl.style.setProperty("display", "none", "important");
     const items = dom.queueList.querySelectorAll(".queue-item");
     items.forEach((el) => el.remove());
     return;
   }
 
-  if (dom.emptyQueue) dom.emptyQueue.style.display = "none";
+  if (queueLoadingEl) {
+    queueLoadingEl.style.setProperty("display", "none", "important");
+  }
+
+  if (state.queue.length === 0) {
+    if (emptyQueueEl) emptyQueueEl.style.setProperty("display", "flex", "important");
+    const items = dom.queueList.querySelectorAll(".queue-item");
+    items.forEach((el) => el.remove());
+    return;
+  }
+
+  if (emptyQueueEl) emptyQueueEl.style.setProperty("display", "none", "important");
 
   const existingItems = Array.from(dom.queueList.querySelectorAll(".queue-item"));
-  const existingMap = new Map(existingItems.map((el) => [parseInt(el.dataset.id), el]));
+  const existingMap = new Map(existingItems.map((el) => [String(el.dataset.id), el]));
 
   state.queue.forEach((item) => {
-    let el = existingMap.get(item.id);
+    const sId = String(item.id);
+    let el = existingMap.get(sId);
     if (!el) {
       el = document.createElement("div");
       el.className = "queue-item";
       el.dataset.id = item.id;
       dom.queueList.appendChild(el);
     }
-    existingMap.delete(item.id);
+    existingMap.delete(sId);
 
-    el.className = `queue-item ${item.status} ${item.id === state.activeItemId ? "active" : ""}`;
+    el.className = `queue-item ${item.status} ${String(item.id) === String(state.activeItemId) ? "active" : ""}`;
 
     const hasArticle = Boolean(item.article && item.article.trim().length > 0);
     const isDone = hasArticle || ["complete", "completed", "telah_dibuat", "dijadwalkan", "draft"].includes(item.status);
@@ -1389,7 +1552,7 @@ function renderQueue() {
     const pubBtn = isDone ? `<button class="btn btn-xs btn-success" onclick="event.stopPropagation(); window.__publishQueueItem('${qIdStr}')" title="${item.status === 'telah_dibuat' ? 'Re-publish / Update WordPress' : 'Publish directly to WordPress'}">🚀 Publish</button>` : "";
     const schBtn = isDone ? `<button class="btn btn-xs btn-warning" onclick="event.stopPropagation(); window.__scheduleQueueItem('${qIdStr}')" title="${item.status === 'dijadwalkan' ? 'Reschedule publication date' : 'Schedule WordPress publication'}">📅 Schedule</button>` : "";
     const viewBtn = item.link ? `<a href="${item.link}" target="_blank" class="btn btn-xs btn-outline-success" onclick="event.stopPropagation()" title="View published post on WordPress">🌐 Post</a>` : "";
-    const removeQueueBtn = (state.isAdmin && item.status !== "generating") ? `<button class="btn btn-xs btn-ghost text-danger" onclick="event.stopPropagation(); window.__removeFromQueue('${qIdStr}')" title="Remove item from queue">🗑️ Remove</button>` : "";
+    const removeQueueBtn = (state.isAdmin && item.status !== "generating") ? `<button class="btn btn-xs btn-ghost text-danger" onclick="event.stopPropagation(); window.__confirmRemoveFromQueue('${qIdStr}')" title="Remove item from queue (Admin only)">🗑️ Remove</button>` : "";
 
     const dateMeta = item.scheduledDate ? `<span>📅 ${escapeHtml(item.scheduledDate.substring(0, 10))}</span>` : (item.publishedDate ? `<span>✅ ${escapeHtml(item.publishedDate.substring(0, 10))}</span>` : "");
 
@@ -1693,6 +1856,75 @@ function autoInsertLinks() {
   showToast(`Auto-filled ${addedUrls.size} related link(s).`, "success");
 }
 
+function getFormInternalLinks() {
+  if (!dom.internalLinksContainer) return [];
+  const rows = Array.from(dom.internalLinksContainer.querySelectorAll(".internal-link-item"));
+  return rows.map(item => ({
+    title: item.querySelector(".link-title-input") ? item.querySelector(".link-title-input").value.trim() : "",
+    url: item.querySelector(".link-url-input") ? item.querySelector(".link-url-input").value.trim() : "",
+    count: item.querySelector(".link-count-input") ? parseInt(item.querySelector(".link-count-input").value, 10) || 1 : 1,
+    isPillar: (parseInt(item.querySelector(".link-count-input") ? item.querySelector(".link-count-input").value : 1, 10) || 1) >= 3 || (item.querySelector(".link-role-badge") ? item.querySelector(".link-role-badge").textContent.includes("Pillar") : false)
+  })).filter(l => l.title && l.url);
+}
+
+async function autoInsertFormInternalLinks(showNotification = true) {
+  if (state.currentMode !== "compose" || !dom.internalLinksContainer) return [];
+
+  if (!state.articles || state.articles.length === 0) {
+    try {
+      if (typeof loadArticles === "function") await loadArticles();
+    } catch (e) {
+      console.warn("Could not preload articles:", e);
+    }
+  }
+
+  const currentTitle = dom.titleInput ? dom.titleInput.value.trim() : "";
+  const currentTopic = dom.topicInput ? dom.topicInput.value.trim() : "";
+  const currentKeyphrase = dom.keyphraseInput ? dom.keyphraseInput.value.trim() : "";
+
+  if (!currentTitle && !currentTopic && !currentKeyphrase) {
+    if (showNotification) {
+      showToast("Please enter a Title, Topic, or Focus Keyphrase first to auto-find related links.", "warning");
+    }
+    return [];
+  }
+
+  const titleLower = currentTitle.toLowerCase();
+  const kpLower = currentKeyphrase.toLowerCase();
+
+  // Find exact article item from state.articles, identical to composeArticleFromItem in Article Manager
+  const targetItem = (state.articles || []).find(a => 
+    (state.editingArticleItem && String(a.id) === String(state.editingArticleItem.id)) ||
+    (state.editingQueueId && state.queue && state.queue.some(q => String(q.id) === String(state.editingQueueId) && q.managerId && String(a.id) === String(q.managerId))) ||
+    (kpLower && a.keyphrase && a.keyphrase.toLowerCase().trim() === kpLower) ||
+    (titleLower && a.title && a.title.toLowerCase().trim() === titleLower) ||
+    (titleLower && a.keyphrase && a.keyphrase.toLowerCase().trim() === titleLower) ||
+    (kpLower && a.title && a.title.toLowerCase().trim() === kpLower)
+  ) || {
+    id: state.editingArticleItem?.id || undefined,
+    title: currentTitle,
+    topic: currentTopic,
+    keyphrase: currentKeyphrase
+  };
+
+  const autoLinks = getRelatedArticlesForCompose(targetItem);
+  if (autoLinks && autoLinks.length > 0) {
+    dom.internalLinksContainer.innerHTML = "";
+    autoLinks.forEach(rel => {
+      addInternalLink(rel.title, rel.url, rel.count || 1, rel.isPillar || false);
+    });
+    if (showNotification) {
+      showToast(`Auto-filled ${autoLinks.length} related link(s).`, "info");
+    }
+    return autoLinks;
+  } else {
+    if (showNotification) {
+      showToast("No related articles found to insert as internal links.", "info");
+    }
+    return [];
+  }
+}
+
 function getRelatedArticlesForCompose(item) {
   if (!state.articles || state.articles.length === 0) return [];
   
@@ -1711,8 +1943,12 @@ function getRelatedArticlesForCompose(item) {
     return "";
   };
 
-  const itemIdx = state.articles.findIndex(a => String(a.id) === String(item.id));
-  const isCluster = /cluster|sub-page|child/i.test(item.pageRole || "");
+  const itemIdx = state.articles.findIndex(a => 
+    String(a.id) === String(item.id) ||
+    (item.keyphrase && a.keyphrase && a.keyphrase.toLowerCase().trim() === item.keyphrase.toLowerCase().trim()) ||
+    (item.title && a.title && a.title.toLowerCase().trim() === item.title.toLowerCase().trim())
+  );
+  const isCluster = /cluster|sub-page|child/i.test(item.pageRole || (itemIdx !== -1 ? state.articles[itemIdx].pageRole : "") || "");
 
   // 1. If Cluster, find parent Pillar article (Repeated 3 to 5 times)
   let pillarItem = null;
@@ -1848,7 +2084,7 @@ async function saveAdminSettingsFromForm() {
 
 // ── Generation Logic ─────────────────────────────────────────────
 async function regenerateQueueItem(id) {
-  const item = state.queue.find((q) => q.id === id);
+  const item = state.queue.find((q) => String(q.id) === String(id));
   if (!item) {
     showToast("Selected article not found in queue.", "error");
     return;
@@ -1880,20 +2116,84 @@ async function regenerateQueueItem(id) {
 window.__regenerateQueueItem = (id) => regenerateQueueItem(id);
 
 async function generateSingle() {
-  let item = state.queue.find((q) => q.status === "pending" || q.status === "error");
-  if (!item) {
+  // Ensure articles list is loaded for auto-linking if not already
+  if (!state.articles || state.articles.length === 0) {
+    try {
+      if (typeof loadArticles === "function") await loadArticles();
+    } catch (e) {
+      console.warn("Could not preload articles:", e);
+    }
+  }
+
+  const currentTitle = dom.titleInput ? dom.titleInput.value.trim() : "";
+  const currentKeyphrase = dom.keyphraseInput ? dom.keyphraseInput.value.trim() : "";
+  const currentTopic = dom.topicInput ? dom.topicInput.value.trim() : "";
+
+  const formHasComposeContent = state.currentMode === "compose" && (currentTitle || currentKeyphrase || currentTopic);
+  const formHasContent = formHasComposeContent ||
+                         (state.currentMode === "update" && currentTitle) ||
+                         (state.currentMode === "image-seo" && (dom.imagePreview && dom.imagePreview.src)) ||
+                         (state.currentMode === "insert-link" && dom.insertLinkTargetSelect && dom.insertLinkTargetSelect.value);
+
+  // Auto internal link insertion if empty on Generate Now (in Compose mode with content)
+  if (formHasComposeContent) {
+    const existingLinks = getFormInternalLinks();
+    if (existingLinks.length === 0) {
+      await autoInsertFormInternalLinks(true);
+    }
+  }
+
+  let item = null;
+  if (state.editingQueueId) {
     const data = validateForm();
-    if (data) {
+    if (!data) return;
+    const idx = state.queue.findIndex(q => String(q.id) === String(state.editingQueueId));
+    if (idx !== -1) {
+      state.queue[idx] = {
+        ...state.queue[idx],
+        ...data,
+        status: "pending",
+        progress: 0,
+        error: ""
+      };
+      item = state.queue[idx];
+    } else {
       item = createQueueItem(data);
       state.queue.push(item);
-      saveQueue();
-      renderQueue();
     }
+    state.editingQueueId = null;
+    saveQueue();
+    renderQueue();
+  } else if (formHasContent) {
+    const data = validateForm();
+    if (!data) return;
+    item = createQueueItem(data);
+    state.queue.push(item);
+    saveQueue();
+    renderQueue();
+  } else {
+    item = state.queue.find((q) => q.status === "pending" || q.status === "error");
   }
 
   if (!item) {
     showToast("Please fill in required fields or add an item to the queue.", "error");
     return;
+  }
+
+  // Ensure item has internal links if mode is compose and internalLinks is empty
+  if (item.mode === "compose" && (!item.internalLinks || item.internalLinks.length === 0)) {
+    const autoLinks = getRelatedArticlesForCompose(item);
+    if (autoLinks && autoLinks.length > 0) {
+      item.internalLinks = autoLinks;
+      saveQueue();
+      renderQueue();
+      if (dom.internalLinksContainer && getFormInternalLinks().length === 0) {
+        dom.internalLinksContainer.innerHTML = "";
+        autoLinks.forEach(rel => {
+          addInternalLink(rel.title, rel.url, rel.count || 1, rel.isPillar || false);
+        });
+      }
+    }
   }
 
   await generateArticle(item);
@@ -1918,6 +2218,23 @@ async function generateAll() {
 }
 
 async function generateArticle(item) {
+  // Safety fallback: if compose article has no internal links, auto-fill using exact compose logic
+  if (item.mode === "compose" && (!item.internalLinks || item.internalLinks.length === 0)) {
+    const targetItem = (state.articles || []).find(a => 
+      (item.managerId && String(a.id) === String(item.managerId)) ||
+      String(a.id) === String(item.id) ||
+      (item.keyphrase && a.keyphrase && a.keyphrase.toLowerCase().trim() === item.keyphrase.toLowerCase().trim()) ||
+      (item.title && a.title && a.title.toLowerCase().trim() === item.title.toLowerCase().trim())
+    ) || item;
+
+    const autoLinks = getRelatedArticlesForCompose(targetItem);
+    if (autoLinks && autoLinks.length > 0) {
+      item.internalLinks = autoLinks;
+      saveQueue();
+      renderQueue();
+    }
+  }
+
   state.isGenerating = true;
   item.status = "generating";
   item.progress = 0;
@@ -2274,8 +2591,8 @@ function renderImageGallery(item) {
       </div>
       <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: auto; padding-top: 0.5rem; border-top: 1px dashed var(--border-subtle);">
         ${imgUrl ? `<a href="${imgUrl}" download="${escapeHtml(fileName)}" target="_blank" class="btn btn-sm btn-primary" style="flex:1; text-align:center;">📥 Download Image</a>` : ""}
-        <button type="button" class="btn btn-sm btn-secondary" onclick="window.__downloadImageMeta(${item.id}, ${idx})">📄 Download Meta</button>
-        ${img.altText ? `<button type="button" class="btn btn-sm btn-ghost" onclick="window.__copyImageAlt(${item.id}, ${idx})">📋 Copy Alt</button>` : ""}
+        <button type="button" class="btn btn-sm btn-secondary" onclick="window.__downloadImageMeta('${escapeHtml(String(item.id))}', ${idx})">📄 Download Meta</button>
+        ${(img.altText || img.alt || img.alt_text) ? `<button type="button" class="btn btn-sm btn-ghost" onclick="window.__copyImageAlt('${escapeHtml(String(item.id))}', ${idx})">📋 Copy Alt</button>` : ""}
       </div>
     `;
 
@@ -3118,17 +3435,17 @@ async function saveScheduleModal() {
 }
 
 function scheduleQueueItem(id) {
-  const item = state.queue.find(q => q.id === id);
+  const item = state.queue.find(q => String(q.id) === String(id));
   openScheduleModal({ queueId: id, title: item ? item.title : "", action: "schedule" });
 }
 
 function publishQueueItem(id) {
-  const item = state.queue.find(q => q.id === id);
+  const item = state.queue.find(q => String(q.id) === String(id));
   openScheduleModal({ queueId: id, title: item ? item.title : "", action: "publish" });
 }
 
 function editQueueItem(id) {
-  const item = state.queue.find(q => q.id === id);
+  const item = state.queue.find(q => String(q.id) === String(id));
   if (item) openEditContentModal(item);
 }
 
@@ -3596,29 +3913,69 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function copyToClipboard() {
-  const item = state.queue.find((q) => q.id === state.activeItemId);
-  if (!item || !item.article) return;
+function copyTextToClipboard(text, successMsg = "Copied to clipboard!") {
+  if (!text) return;
 
-  navigator.clipboard.writeText(item.article).then(() => {
-    showToast("Copied article to clipboard!", "success");
-  }).catch(() => {
-    fallbackCopyText(item.article);
-  });
+  function fallbackCopy() {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    textArea.style.opacity = "0";
+    textArea.setAttribute("readonly", "");
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, 99999);
+    try {
+      const successful = document.execCommand("copy");
+      if (successful) {
+        showToast(successMsg, "success");
+      } else {
+        showToast("Unable to copy to clipboard.", "error");
+      }
+    } catch (err) {
+      showToast("Unable to copy to clipboard.", "error");
+    } finally {
+      if (textArea.parentNode) {
+        textArea.parentNode.removeChild(textArea);
+      }
+    }
+  }
+
+  if (navigator && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(successMsg, "success");
+    }).catch(() => {
+      fallbackCopy();
+    });
+  } else {
+    fallbackCopy();
+  }
 }
 
-function fallbackCopyText(text) {
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  document.body.appendChild(textArea);
-  textArea.select();
-  try {
-    document.execCommand("copy");
-    showToast("Copied article to clipboard!", "success");
-  } catch (err) {
-    showToast("Failed to copy text.", "error");
+function fallbackCopyText(text, msg = "Copied article to clipboard!") {
+  copyTextToClipboard(text, msg);
+}
+
+function copyToClipboard() {
+  const item = (typeof findArticleById === "function" ? findArticleById(state.activeItemId) : null) || 
+               state.queue.find((q) => String(q.id) === String(state.activeItemId)) ||
+               (state.articles ? state.articles.find((a) => String(a.id) === String(state.activeItemId)) : null);
+  if (!item || !item.article) {
+    showToast("No article content to copy.", "warning");
+    return;
   }
-  document.body.removeChild(textArea);
+
+  copyTextToClipboard(item.article, "Copied article to clipboard!");
 }
 
 function downloadAsTxt() {
@@ -3677,6 +4034,7 @@ window.__regenerate = async (id) => {
 window.__publishQueueItem = (id) => publishQueueItem(id);
 window.__scheduleQueueItem = (id) => scheduleQueueItem(id);
 window.__editQueueItem = (id) => editQueueItem(id);
+window.__autoInsertComposeLinks = () => autoInsertFormInternalLinks(true);
 
 window.__composeFromCalendar = (title) => {
   closeDayDetailsModal();
@@ -3691,8 +4049,14 @@ window.__rescheduleFromCalendar = (title, dateStr) => {
 };
 
 window.__downloadImageMeta = (itemId, imgIdx) => {
-  const item = state.queue.find(q => q.id === itemId);
-  if (!item) return;
+  const sId = String(itemId);
+  const item = (typeof findArticleById === "function" ? findArticleById(sId) : null) || 
+               state.queue.find(q => String(q.id) === sId) ||
+               (state.articles ? state.articles.find(a => String(a.id) === sId) : null);
+  if (!item) {
+    showToast("Article not found for image metadata download.", "error");
+    return;
+  }
   const images = item.images || item.articleImages || [];
   const img = images[imgIdx];
   if (!img) return;
@@ -3704,7 +4068,7 @@ Image Index  : #${imgIdx + 1} ${imgIdx === 0 ? '(Featured Image)' : ''}
 File Name    : ${img.fileName || ('image-' + (imgIdx + 1) + '.jpg')}
 Location     : ${img.location || '-'}
 Scene        : ${img.scene || '-'}
-Alt Text     : ${img.altText || '-'}
+Alt Text     : ${img.altText || img.alt || img.alt_text || '-'}
 Title        : ${img.title || '-'}
 Caption      : ${img.caption || '-'}
 Description  : ${img.description || '-'}
@@ -3724,17 +4088,23 @@ URL          : ${normalizeImageUrl(img.imageUrl || img.imageBase64 || img.url ||
 };
 
 window.__copyImageAlt = (itemId, imgIdx) => {
-  const item = state.queue.find(q => q.id === itemId);
-  if (!item) return;
+  const sId = String(itemId);
+  const item = (typeof findArticleById === "function" ? findArticleById(sId) : null) || 
+               state.queue.find(q => String(q.id) === sId) ||
+               (state.articles ? state.articles.find(a => String(a.id) === sId) : null);
+  if (!item) {
+    showToast("Article not found.", "error");
+    return;
+  }
   const images = item.images || item.articleImages || [];
   const img = images[imgIdx];
-  if (!img || !img.altText) return;
+  const alt = img ? (img.altText || img.alt || img.alt_text || "") : "";
+  if (!alt) {
+    showToast("No Alt text available for this image.", "warning");
+    return;
+  }
 
-  navigator.clipboard.writeText(img.altText).then(() => {
-    showToast("Copied Alt Text to clipboard!", "success");
-  }).catch(() => {
-    fallbackCopyText(img.altText);
-  });
+  copyTextToClipboard(alt, "Copied Alt Text to clipboard!");
 };
 
 // ── Start Application ────────────────────────────────────────────

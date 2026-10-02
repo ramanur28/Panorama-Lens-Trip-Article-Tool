@@ -873,6 +873,208 @@ select option {
   background: #d97706;
 }
 
+/* ── Queue Loading State & Skeleton Animation ──────────────── */
+.queue-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  width: 100%;
+  animation: fadeIn var(--duration-normal) var(--ease-out);
+}
+
+.queue-spinner-container {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.85rem;
+}
+
+.queue-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(99, 102, 241, 0.15);
+  border-top-color: var(--accent-start);
+  border-right-color: var(--accent-end);
+  animation: queueSpin 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.queue-spinner-pulse {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px dashed var(--border-accent);
+  animation: queuePulse 2s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.queue-spinner-icon {
+  font-size: 1.4rem;
+  animation: queueIconFloat 2.2s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes queueSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes queuePulse {
+  0%, 100% { transform: scale(0.92); opacity: 0.3; }
+  50% { transform: scale(1.08); opacity: 0.75; }
+}
+
+@keyframes queueIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.queue-loading-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.queue-loading-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.queue-loading-subtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* Skeleton Loading Cards */
+.queue-skeleton-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.queue-skeleton-card {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.queue-skeleton-bar {
+  background: var(--bg-surface-active);
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.queue-skeleton-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: queueShimmer 1.5s infinite ease-in-out;
+}
+
+:root[data-theme="light"] .queue-skeleton-bar::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.06) 50%,
+    transparent 100%
+  );
+}
+
+@keyframes queueShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.queue-skeleton-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.queue-skeleton-title {
+  height: 14px;
+  width: 65%;
+}
+
+.queue-skeleton-title.wide {
+  width: 82%;
+}
+
+.queue-skeleton-badge {
+  height: 16px;
+  width: 44px;
+  border-radius: 10px;
+}
+
+.queue-skeleton-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.queue-skeleton-tag {
+  height: 10px;
+  width: 75px;
+  border-radius: 3px;
+}
+
+.queue-skeleton-tag.short {
+  width: 45px;
+}
+
+.queue-skeleton-actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+}
+
+.queue-skeleton-btn {
+  height: 22px;
+  width: 70px;
+  border-radius: 5px;
+}
+
+/* Queue Refresh Spinner in Title */
+.queue-refresh-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-accent);
+  border-top-color: var(--accent-start);
+  border-radius: 50%;
+  animation: queueSpin 0.75s linear infinite;
+  display: none;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+}
+
 /* ── Empty States ─────────────────────────────────────────── */
 .empty-state {
   display: flex;
@@ -3049,6 +3251,32 @@ select option {
     justify-content: space-between;
   }
 
+  .panel-queue .queue-loading-state {
+    flex-direction: row !important;
+    padding: 1rem 1.5rem !important;
+    gap: 1.5rem !important;
+    align-items: center !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .panel-queue .queue-loading-state .queue-loading-info {
+    align-items: flex-start !important;
+    text-align: left !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0;
+  }
+
+  .panel-queue .queue-loading-state .queue-skeleton-list {
+    flex-direction: row !important;
+    flex: 1;
+  }
+
+  .panel-queue .queue-loading-state .queue-skeleton-card {
+    min-width: 240px;
+    flex: 0 0 240px;
+  }
+
   .panel-queue .empty-state {
     flex-direction: row !important;
     padding: 1rem 1.5rem !important;
@@ -3140,6 +3368,15 @@ select option {
     font-size: 0.78rem !important;
     justify-content: center !important;
     text-align: center !important;
+  }
+
+  .panel-queue .queue-loading-state {
+    padding: 2.5rem 1rem !important;
+    text-align: center !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    margin: auto 0 !important;
+    width: 100% !important;
   }
 
   .panel-queue .empty-state {

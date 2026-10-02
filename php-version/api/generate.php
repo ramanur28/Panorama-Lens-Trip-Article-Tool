@@ -45,7 +45,7 @@ $targetLanguage = $adminSettings['target_language'] ?? 'English';
 $finalCustomPrompt = $customPromptParam !== null ? $customPromptParam : ($adminSettings['custom_prompt'] ?? '');
 $finalTargetAudience = $targetAudienceParam !== null ? $targetAudienceParam : ($adminSettings['target_audience'] ?? '');
 $finalBrand = $brandParam !== null ? $brandParam : ($adminSettings['brand'] ?? '');
-$finalCtaLink = $adminSettings['cta_link'] ?? 'https://wa.me/+6282132838229?text=Hello+Panorama+Lens+Trip%21';
+$finalCtaLink = !empty($input['ctaLink']) ? trim($input['ctaLink']) : ($adminSettings['cta_link'] ?? 'https://wa.me/+6282132838229?text=Hello+Panorama+Lens+Trip%21');
 
 $wordCountMode = $adminSettings['word_count_mode'] ?? 'total';
 $wordCountDivisor = max(2, min(50, (int)($adminSettings['word_count_divisor'] ?? 10)));

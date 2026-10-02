@@ -23,7 +23,184 @@ try {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/style.css" />
+  <?php 
+    $cssVer = file_exists(__DIR__ . '/assets/css/style.css') ? filemtime(__DIR__ . '/assets/css/style.css') : time();
+    $jsVer = file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ . '/assets/js/app.js') : time();
+  ?>
+  <link rel="stylesheet" href="assets/css/style.css?v=<?= $cssVer ?>" />
+  <style>
+    /* Critical Queue Loader & Skeleton Styles */
+    .queue-loading-state {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 1.75rem 1rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      animation: queueFadeIn 0.25s ease-out;
+    }
+    .queue-spinner-container {
+      position: relative !important;
+      width: 50px !important;
+      height: 50px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 auto 0.75rem auto !important;
+    }
+    .queue-spinner-ring {
+      position: absolute !important;
+      inset: 0 !important;
+      border-radius: 50% !important;
+      border: 3px solid rgba(99, 102, 241, 0.18) !important;
+      border-top-color: #6366f1 !important;
+      border-right-color: #a78bfa !important;
+      animation: queueSpin 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite !important;
+      box-shadow: 0 0 14px rgba(99, 102, 241, 0.25) !important;
+      box-sizing: border-box !important;
+    }
+    .queue-spinner-pulse {
+      position: absolute !important;
+      inset: -4px !important;
+      border-radius: 50% !important;
+      border: 1px dashed rgba(99, 102, 241, 0.4) !important;
+      animation: queuePulse 2s ease-in-out infinite !important;
+      opacity: 0.6 !important;
+      box-sizing: border-box !important;
+    }
+    .queue-spinner-icon {
+      font-size: 1.35rem !important;
+      animation: queueIconFloat 2.2s ease-in-out infinite !important;
+      user-select: none !important;
+      line-height: 1 !important;
+      display: block !important;
+    }
+    @keyframes queueSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes queuePulse {
+      0%, 100% { transform: scale(0.92); opacity: 0.3; }
+      50% { transform: scale(1.08); opacity: 0.75; }
+    }
+    @keyframes queueIconFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+    .queue-loading-info {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      margin-bottom: 1.25rem !important;
+      width: 100% !important;
+    }
+    .queue-loading-text {
+      font-size: 0.9rem !important;
+      font-weight: 600 !important;
+      color: var(--text-primary, #0f172a) !important;
+      letter-spacing: -0.01em !important;
+      display: block !important;
+    }
+    .queue-loading-subtext {
+      font-size: 0.75rem !important;
+      color: var(--text-muted, #64748b) !important;
+      margin-top: 0.25rem !important;
+      display: block !important;
+    }
+    .queue-skeleton-list {
+      width: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.65rem !important;
+      box-sizing: border-box !important;
+    }
+    .queue-skeleton-card {
+      padding: 0.85rem 1rem !important;
+      border-radius: 12px !important;
+      background: var(--bg-surface, #ffffff) !important;
+      border: 1px solid var(--border-subtle, #e2e8f0) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+      position: relative !important;
+      overflow: hidden !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+      box-sizing: border-box !important;
+    }
+    .queue-skeleton-bar {
+      background: var(--bg-surface-active, #f1f5f9) !important;
+      position: relative !important;
+      overflow: hidden !important;
+      border-radius: 4px !important;
+      box-sizing: border-box !important;
+    }
+    .queue-skeleton-bar::after {
+      content: '' !important;
+      position: absolute !important;
+      inset: 0 !important;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.65) 50%, transparent 100%) !important;
+      transform: translateX(-100%) !important;
+      animation: queueShimmer 1.5s infinite ease-in-out !important;
+    }
+    @keyframes queueShimmer {
+      100% { transform: translateX(100%); }
+    }
+    .queue-skeleton-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 0.75rem !important;
+    }
+    .queue-skeleton-title {
+      height: 14px !important;
+      width: 65% !important;
+    }
+    .queue-skeleton-title.wide {
+      width: 82% !important;
+    }
+    .queue-skeleton-badge {
+      height: 16px !important;
+      width: 48px !important;
+      border-radius: 10px !important;
+    }
+    .queue-skeleton-meta {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+    }
+    .queue-skeleton-tag {
+      height: 10px !important;
+      width: 75px !important;
+      border-radius: 3px !important;
+    }
+    .queue-skeleton-tag.short {
+      width: 45px !important;
+    }
+    .queue-skeleton-actions {
+      display: flex !important;
+      gap: 0.35rem !important;
+      margin-top: 0.2rem !important;
+    }
+    .queue-skeleton-btn {
+      height: 22px !important;
+      width: 70px !important;
+      border-radius: 5px !important;
+    }
+    .queue-refresh-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(99, 102, 241, 0.4);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: queueSpin 0.75s linear infinite;
+      display: none;
+      vertical-align: middle;
+      margin-left: 0.4rem;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
   <!-- ═══ Full Screen Authentication Gateway ═══ -->
@@ -461,10 +638,16 @@ try {
             <div id="internalLinksContainer">
               <!-- Internal link rows will be appended here -->
             </div>
-            <button type="button" class="btn btn-sm btn-ghost" id="addInternalLinkBtn" style="margin-top: 0.5rem">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Internal Link
-            </button>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-sm btn-ghost" id="addInternalLinkBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Internal Link
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" id="autoInsertComposeLinksBtn" title="Automatically find and insert related Pillar & Cluster internal links from Article Manager">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Auto Insert Related Links
+              </button>
+            </div>
           </div>
 
           <details class="starter-details show-in-compose">
@@ -495,6 +678,7 @@ try {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           Queue
           <span class="badge" id="queueCount">0</span>
+          <span class="queue-refresh-spinner" id="queueRefreshSpinner" title="Syncing queue..." style="display:none"></span>
         </h2>
         <div class="panel-actions">
           <button class="btn btn-sm btn-secondary" id="btnSyncWPQueue" title="Sync articles & queue with WordPress">
@@ -509,7 +693,50 @@ try {
         </div>
       </div>
       <div class="panel-body" id="queueList">
-        <div class="empty-state" id="emptyQueue">
+        <!-- ── Queue Loading State (Loader Animation) ── -->
+        <div class="queue-loading-state" id="queueLoading">
+          <div class="queue-spinner-container">
+            <div class="queue-spinner-ring"></div>
+            <div class="queue-spinner-pulse"></div>
+            <div class="queue-spinner-icon">📋</div>
+          </div>
+          <div class="queue-loading-info">
+            <span class="queue-loading-text">Loading queue articles...</span>
+            <span class="queue-loading-subtext">Fetching queued and scheduled items</span>
+          </div>
+          <div class="queue-skeleton-list">
+            <div class="queue-skeleton-card">
+              <div class="queue-skeleton-header">
+                <div class="queue-skeleton-bar queue-skeleton-title"></div>
+                <div class="queue-skeleton-bar queue-skeleton-badge"></div>
+              </div>
+              <div class="queue-skeleton-meta">
+                <div class="queue-skeleton-bar queue-skeleton-tag"></div>
+                <div class="queue-skeleton-bar queue-skeleton-tag short"></div>
+              </div>
+              <div class="queue-skeleton-actions">
+                <div class="queue-skeleton-bar queue-skeleton-btn"></div>
+                <div class="queue-skeleton-bar queue-skeleton-btn"></div>
+              </div>
+            </div>
+            <div class="queue-skeleton-card">
+              <div class="queue-skeleton-header">
+                <div class="queue-skeleton-bar queue-skeleton-title wide"></div>
+                <div class="queue-skeleton-bar queue-skeleton-badge"></div>
+              </div>
+              <div class="queue-skeleton-meta">
+                <div class="queue-skeleton-bar queue-skeleton-tag"></div>
+                <div class="queue-skeleton-bar queue-skeleton-tag short"></div>
+              </div>
+              <div class="queue-skeleton-actions">
+                <div class="queue-skeleton-bar queue-skeleton-btn"></div>
+                <div class="queue-skeleton-bar queue-skeleton-btn"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" id="emptyQueue" style="display:none">
           <div class="empty-icon">📋</div>
           <p>No articles in queue</p>
           <p class="empty-hint">Fill in the form and click "Add to Queue" to batch generate multiple articles.</p>
@@ -908,12 +1135,74 @@ try {
     </div>
   </div>
 
+  <!-- ═══ Remove Queue Item Confirmation Modal ═══ -->
+  <div class="modal-overlay" id="removeQueueModal">
+    <div class="modal modal-sm" style="max-width: 440px;">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-subtle);">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem; color: var(--error, #ef4444); font-size: 1.1rem; margin: 0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+          Remove from Queue
+        </h2>
+        <button class="modal-close" id="closeRemoveQueueModal" aria-label="Close remove confirmation">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1.25rem;">
+        <div style="background: var(--error-bg, rgba(239, 68, 68, 0.08)); border: 1px solid var(--error, rgba(239, 68, 68, 0.25)); border-radius: var(--radius-sm, 8px); padding: 0.85rem; margin-bottom: 1rem;">
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 0.4rem 0;">
+            Are you sure you want to remove this article from the queue?
+          </p>
+          <div id="removeQueueTitle" style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; word-break: break-word;"></div>
+          <div id="removeQueueMeta" style="font-size: 0.76rem; color: var(--text-muted);"></div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+          ⚠️ <strong>Admin Action:</strong> This item will be removed from the studio generation queue.
+        </p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.6rem; padding: 0.85rem 1.25rem; border-top: 1px solid var(--border-subtle);">
+        <button type="button" class="btn btn-secondary" id="btnCancelRemoveQueue">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmRemoveQueue" style="background: #dc2626; color: #fff; font-weight: 600;">
+          🗑️ Remove from Queue
+        </button>
+      </div>
+    </div>
+  </div>
+
   </div> <!-- /#appContainer -->
 
   <!-- ═══ Toast Container ═══ -->
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="assets/js/marked.min.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=<?= $jsVer ?>"></script>
+  <script>
+    // Robust Safeguard: Ensure queue loader & spinner hide instantly whenever queue items exist
+    (function() {
+      function checkAndHideLoader() {
+        const qList = document.getElementById("queueList");
+        const loader = document.getElementById("queueLoading");
+        const spinner = document.getElementById("queueRefreshSpinner");
+        if (qList) {
+          const hasCards = qList.querySelectorAll(".queue-item").length > 0;
+          if (hasCards) {
+            if (loader) loader.style.setProperty("display", "none", "important");
+            if (spinner) spinner.style.setProperty("display", "none", "important");
+          }
+        }
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", checkAndHideLoader);
+      } else {
+        checkAndHideLoader();
+      }
+      const qList = document.getElementById("queueList");
+      if (qList && typeof MutationObserver !== "undefined") {
+        new MutationObserver(checkAndHideLoader).observe(qList, { childList: true });
+      }
+    })();
+  </script>
 </body>
 </html>

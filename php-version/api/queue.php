@@ -169,13 +169,13 @@ if ($method === 'POST') {
 
 // --- 3. DELETE Queue Item(s) ---
 if ($method === 'DELETE') {
+    Auth::requireAdmin();
     if (!empty($id)) {
         $stmt = $pdo->prepare("DELETE FROM generation_queue WHERE id = ?");
         $stmt->execute([$id]);
         echo json_encode(['success' => true, 'message' => "Item '{$id}' removed."]);
         exit;
     } else {
-        Auth::requireAdmin();
         $pdo->exec("TRUNCATE TABLE generation_queue");
         echo json_encode(['success' => true, 'message' => 'Queue cleared.']);
         exit;
